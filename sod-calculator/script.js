@@ -21,7 +21,6 @@ EQUIPMENT.forEach(eq => {
   item.innerHTML = `
     <label class="equip-check-label">
       <input type="checkbox" id="${eq.id}-tog">
-      <div class="equip-check-box"></div>
       <span class="equip-label-text">${eq.label}</span>
     </label>
     <div id="${eq.id}-inputs" class="equip-inputs">
