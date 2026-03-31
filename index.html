@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Foreterra Services — Sod Installation Quote Engine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="layout">
+
+<!-- ── SIDEBAR ── -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo-mark">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-4H7l5-9v4h4l-5 9z"/></svg>
+      </div>
+      <span class="logo-name">Foreterra Services</span>
+    </div>
+    <div class="sidebar-tagline">Sod Installation Quote Engine</div>
+  </div>
+
+  <div class="sb-body">
+
+    <!-- Job Details -->
+    <div class="sb-section">
+      <div class="sb-title">Job details</div>
+      <div class="sb-row">
+        <div class="sb-label">Area (sq ft)</div>
+        <input class="sb-input" type="number" id="sb-area" value="1800" min="0" step="10" placeholder="e.g. 1800">
+      </div>
+      <div class="sb-row">
+        <div class="sb-label">Crew size</div>
+        <input class="sb-input" type="number" id="sb-crew" value="3" min="1" max="10" step="1" placeholder="e.g. 3">
+      </div>
+    </div>
+
+    <!-- Labour -->
+    <div class="sb-section">
+      <div class="sb-title">Labour</div>
+      <div class="sb-row">
+        <div class="sb-label">Wage per worker ($/hr)</div>
+        <input class="sb-input" type="number" id="sb-wage" value="25" min="0" step="0.5" placeholder="e.g. 25">
+      </div>
+      <div class="sb-row">
+        <div class="sb-label">
+          <span>Burden %</span>
+          <span class="sb-label-val" id="sb-burden-out">20%</span>
+        </div>
+        <div class="note-box">WCB, payroll tax, CPP, EI applied to wage</div>
+        <input type="range" id="sb-burden" min="0" max="100" step="1" value="20">
+      </div>
+      <div class="sb-row">
+        <div class="sb-label">
+          <span>Labour margin %</span>
+          <span class="sb-label-val" id="sb-labmargin-out">0%</span>
+        </div>
+        <div class="note-box">Profit markup on labour — independent of job margin</div>
+        <input type="range" id="sb-labmargin" min="0" max="100" step="1" value="0">
+      </div>
+      <div class="crew-rate-pill">
+        <div class="crew-rate-num" id="sb-crewrate">$—</div>
+        <div class="crew-rate-sub" id="sb-crewrate-sub">billed crew rate / hr</div>
+      </div>
+    </div>
+
+    <!-- Materials -->
+    <div class="sb-section">
+      <div class="sb-title">Materials</div>
+      <div class="sb-row">
+        <div class="sb-label">Sod price ($/sq ft)</div>
+        <input class="sb-input" type="number" id="sb-sodp" value="0.45" min="0" step="0.01" placeholder="e.g. 0.45">
+      </div>
+      <div class="sb-row">
+        <div class="sb-label">Sod delivery ($)</div>
+        <input class="sb-input" type="number" id="sb-del" value="150" min="0" step="10" placeholder="e.g. 150">
+      </div>
+      <div class="two-row">
+        <div class="sb-row">
+          <div class="sb-label">Topsoil (yds)</div>
+          <input class="sb-input" type="number" id="sb-top" value="6" min="0" step="1" placeholder="yds">
+        </div>
+        <div class="sb-row">
+          <div class="sb-label">Topsoil ($/yd)</div>
+          <input class="sb-input" type="number" id="sb-topp" value="32" min="0" step="1" placeholder="$/yd">
+        </div>
+      </div>
+      <div class="sb-row">
+        <div class="sb-label">
+          <span>Waste factor</span>
+          <span class="sb-label-val" id="sb-waste-out">8%</span>
+        </div>
+        <input type="range" id="sb-waste" min="5" max="20" step="1" value="8">
+      </div>
+      <div class="sb-row">
+        <div class="sb-label">Mobilization / setup ($)</div>
+        <input class="sb-input" type="number" id="sb-mob" value="70" min="0" step="10" placeholder="e.g. 70">
+      </div>
+      <div class="sb-row">
+        <div class="sb-label">Disposal fee ($)</div>
+        <input class="sb-input" type="number" id="sb-disp" value="150" min="0" step="25" placeholder="e.g. 150">
+      </div>
+    </div>
+
+    <!-- Equipment -->
+    <div class="sb-section">
+      <div class="sb-title">Equipment</div>
+      <div class="note-box" style="margin-bottom:10px;">Select · enter $/hr · enter hours on job</div>
+      <div id="equip-list"></div>
+    </div>
+
+    <!-- Phases -->
+    <div class="sb-section">
+      <div class="sb-title">Phases active</div>
+      <label class="phase-check"><input type="checkbox" id="tog-removal" checked><div class="check-box"></div><span>Sod removal</span></label>
+      <label class="phase-check"><input type="checkbox" id="tog-grade" checked><div class="check-box"></div><span>Grading &amp; prep</span></label>
+      <label class="phase-check"><input type="checkbox" id="tog-install" checked><div class="check-box"></div><span>Sod installation</span></label>
+      <label class="phase-check"><input type="checkbox" id="tog-final" checked><div class="check-box"></div><span>Finalization</span></label>
+      <label class="phase-check"><input type="checkbox" id="tog-cleanup" checked><div class="check-box"></div><span>Cleanup &amp; close</span></label>
+    </div>
+
+    <!-- Production Rates -->
+    <div class="sb-section">
+      <div class="sb-title">Production rates (sq ft / hr)</div>
+      <div class="sb-row">
+        <div class="sb-label"><span>Removal</span><span class="sb-label-val" id="sb-rr-out">250</span></div>
+        <input type="range" id="sb-rr" min="100" max="600" step="25" value="250">
+      </div>
+      <div class="sb-row">
+        <div class="sb-label"><span>Grading</span><span class="sb-label-val" id="sb-gr-out">200</span></div>
+        <input type="range" id="sb-gr" min="100" max="500" step="25" value="200">
+      </div>
+      <div class="sb-row">
+        <div class="sb-label"><span>Installation</span><span class="sb-label-val" id="sb-ir-out">400</span></div>
+        <input type="range" id="sb-ir" min="150" max="700" step="25" value="400">
+      </div>
+      <div class="sb-row">
+        <div class="sb-label"><span>Finalization hrs</span><span class="sb-label-val" id="sb-fh-out">1.5</span></div>
+        <input type="range" id="sb-fh" min="0.5" max="6" step="0.5" value="1.5">
+      </div>
+      <div class="sb-row">
+        <div class="sb-label"><span>Cleanup hrs</span><span class="sb-label-val" id="sb-ch-out">2.0</span></div>
+        <input type="range" id="sb-ch" min="0.5" max="6" step="0.5" value="2">
+      </div>
+    </div>
+
+    <!-- Margin & Billing -->
+    <div class="sb-section">
+      <div class="sb-title">Job margin &amp; billing</div>
+      <div class="note-box" style="margin-bottom:8px;">Applied to materials, equipment &amp; fixed costs only</div>
+      <div class="sb-row">
+        <div class="sb-label"><span>Job margin %</span><span class="sb-label-val" id="sb-margin-out">30%</span></div>
+        <input type="range" id="sb-margin" min="0" max="60" step="1" value="30">
+      </div>
+      <div class="sb-row">
+        <div class="sb-label"><span>Client discount %</span><span class="sb-label-val" style="color:#c94040;" id="sb-disc-out">0%</span></div>
+        <input type="range" id="sb-disc" min="0" max="30" step="1" value="0">
+      </div>
+      <label class="phase-check" style="margin-top:6px;">
+        <input type="checkbox" id="sb-gst" checked><div class="check-box"></div><span>Apply 5% GST</span>
+      </label>
+    </div>
+
+  </div>
+</aside>
+
+<!-- ── MAIN ── -->
+<main class="main">
+  <div class="main-header">
+    <div>
+      <div class="main-title">Sod Installation Quote</div>
+      <div class="main-subtitle">Live cost engine — all values update automatically</div>
+    </div>
+  </div>
+
+  <!-- Metrics -->
+  <div class="metrics">
+    <div class="mcard good">
+      <div class="mcard-label">Client quote (pre-GST)</div>
+      <div class="mcard-val" id="m-quote">$—</div>
+      <div class="mcard-sub" id="m-sqft">— per sq ft</div>
+    </div>
+    <div class="mcard blue">
+      <div class="mcard-label">Your true cost</div>
+      <div class="mcard-val" id="m-cost">$—</div>
+      <div class="mcard-sub">labour + materials + equip</div>
+    </div>
+    <div class="mcard gold">
+      <div class="mcard-label">Your profit</div>
+      <div class="mcard-val" id="m-profit">$—</div>
+      <div class="mcard-sub" id="m-margin-sub">combined margins</div>
+    </div>
+  </div>
+
+  <!-- Invoice breakdown -->
+  <div class="quote-block" id="quote-block">
+    <!-- Populated by JS -->
+  </div>
+
+  <!-- Footer details -->
+  <div class="q-footer" id="q-footer"></div>
+
+  <!-- Time bar -->
+  <div class="time-bar" id="time-summary"></div>
+
+</main>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
