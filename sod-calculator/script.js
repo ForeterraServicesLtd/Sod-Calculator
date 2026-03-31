@@ -1,5 +1,5 @@
 const g = id => document.getElementById(id);
-const fmt = n => '$' + Math.round(n).toLocaleString();
+const fmt = n => '$' + Math.round(n).toLocaleString('en-CA');
 const num = id => parseFloat(g(id).value) || 0;
 
 const EQUIPMENT = [
@@ -17,18 +17,18 @@ const EQUIPMENT = [
 const equipList = g('equip-list');
 EQUIPMENT.forEach(eq => {
   const item = document.createElement('div');
-  item.className = 'equip-item';
+  item.className = 'sb-field';
   item.innerHTML = `
-    <label class="equip-check-label">
+    <label class="phase-check">
       <input type="checkbox" id="${eq.id}-tog">
-      <span class="equip-label-text">${eq.label}</span>
+      ${eq.label}
     </label>
     <div id="${eq.id}-inputs" class="equip-inputs">
       <div class="equip-rate-row">
         <span>$/hr</span>
-        <input class="equip-small-input" type="number" id="${eq.id}-rate" min="0" step="5" placeholder="0">
+        <input class="sb-input" type="number" id="${eq.id}-rate" min="0" step="5" placeholder="0" style="width:72px;">
         <span>hrs</span>
-        <input class="equip-small-input" type="number" id="${eq.id}-hrs" min="0" step="0.5" placeholder="0">
+        <input class="sb-input" type="number" id="${eq.id}-hrs" min="0" step="0.5" placeholder="0" style="width:72px;">
       </div>
     </div>`;
   equipList.appendChild(item);
@@ -61,20 +61,6 @@ EQUIPMENT.forEach(eq => {
   .forEach(id=>g(id).addEventListener('input',calc));
 ['sb-gst','tog-removal','tog-grade','tog-install','tog-final','tog-cleanup']
   .forEach(id=>g(id).addEventListener('change',calc));
-
-function row(name, chip, chipClass, subText, val, valClass) {
-  return `<div class="q-line">
-    <div class="q-line-left">
-      <div class="q-line-name">${name}<span class="chip ${chipClass}">${chip}</span></div>
-      ${subText ? `<div class="q-line-sub">${subText}</div>` : ''}
-    </div>
-    <div class="q-line-val ${valClass}">${val}</div>
-  </div>`;
-}
-
-function section(label) {
-  return `<div class="q-section-row"><span>${label}</span></div>`;
-}
 
 function calc() {
   const area    = num('sb-area');
@@ -150,86 +136,106 @@ function calc() {
 
   // Metrics
   g('m-quote').textContent  = fmt(afterDisc);
-  g('m-sqft').textContent   = '$' + perSqft.toFixed(2) + ' per sq ft';
+  g('m-sqft').textContent   = area > 0 ? '$' + perSqft.toFixed(2) + ' per sq ft' : '—';
   g('m-cost').textContent   = fmt(trueCost);
   g('m-profit').textContent = fmt(profit);
   g('m-margin-sub').textContent =
     Math.round(labMarg*100) + '% labour · ' + Math.round(jobMarg*100) + '% job';
 
+  // Footer
+  g('f-cost').textContent    = fmt(trueCost);
+  g('f-lab').textContent     = fmt(labourBilled);
+  g('f-mat').textContent     = fmt(matBilled);
+  g('f-profit').textContent  = fmt(profit);
+  g('q-total').textContent   = fmt(clientTotal);
+  g('q-gst-note').textContent = gst ? '(incl. GST)' : '(no GST)';
+
   // Build invoice HTML
   let html = '';
 
   // Labour
-  html += section('Labour');
-  html += row(
-    'Labour',
-    'labour', 'chip-labour',
-    totalHrs.toFixed(1) + ' crew hrs · ' + crew + '-person crew · $' + Math.round(billedCrewRate) + '/hr billed',
-    fmt(labourBilled),
-    'labour'
-  );
+  html += `<div class="invoice-section-head">Labour</div>`;
+  html += `<div class="q-line">
+    <div class="q-line-left">
+      <div class="q-line-label">Labour <span class="chip chip-labour">labour</span></div>
+      <div class="q-line-sub">${totalHrs.toFixed(1)} crew hrs · ${crew}-person crew · $${Math.round(billedCrewRate)}/hr billed</div>
+    </div>
+    <div class="q-line-val" style="color:var(--blue);">${fmt(labourBilled)}</div>
+  </div>`;
 
   // Materials & Fixed
-  html += section('Materials &amp; Fixed');
-  if (doI) html += row('Sod material','material','chip-mat',
-    Math.round(sodSqft)+' sq ft @ $'+sodP.toFixed(2)+' (incl. '+Math.round(waste*100)+'% waste)',
-    fmt(sodMat),'material');
-  if (doG && topCost > 0) html += row('Topsoil','material','chip-mat',
-    topYds+' yds @ $'+topPrice+'/yd', fmt(topCost),'material');
-  if (delivery > 0) html += row('Sod delivery','fixed','chip-fixed','',fmt(delivery),'fixed');
-  if (mob > 0) html += row('Mobilization / setup','fixed','chip-fixed','',fmt(mob),'fixed');
-  if (doR && disp > 0) html += row('Disposal fee','fixed','chip-fixed','',fmt(disp),'fixed');
+  html += `<div class="invoice-section-head">Materials &amp; Fixed</div>`;
+  if (doI) html += `<div class="q-line">
+    <div class="q-line-left">
+      <div class="q-line-label">Sod material <span class="chip chip-labour" style="background:var(--green-pale);color:var(--green);">material</span></div>
+      <div class="q-line-sub">${Math.round(sodSqft)} sq ft @ $${sodP.toFixed(2)} (incl. ${Math.round(waste*100)}% waste)</div>
+    </div>
+    <div class="q-line-val" style="color:var(--green);">${fmt(sodMat)}</div>
+  </div>`;
+  if (doG && topCost > 0) html += `<div class="q-line">
+    <div class="q-line-left">
+      <div class="q-line-label">Topsoil <span class="chip chip-labour" style="background:var(--green-pale);color:var(--green);">material</span></div>
+      <div class="q-line-sub">${topYds} yds @ $${topPrice}/yd</div>
+    </div>
+    <div class="q-line-val" style="color:var(--green);">${fmt(topCost)}</div>
+  </div>`;
+  if (delivery > 0) html += `<div class="q-line">
+    <div class="q-line-left"><div class="q-line-label">Sod delivery <span class="chip chip-fixed">fixed</span></div></div>
+    <div class="q-line-val" style="color:#5a3ab0;">${fmt(delivery)}</div>
+  </div>`;
+  if (mob > 0) html += `<div class="q-line">
+    <div class="q-line-left"><div class="q-line-label">Mobilization / setup <span class="chip chip-fixed">fixed</span></div></div>
+    <div class="q-line-val" style="color:#5a3ab0;">${fmt(mob)}</div>
+  </div>`;
+  if (doR && disp > 0) html += `<div class="q-line">
+    <div class="q-line-left"><div class="q-line-label">Disposal fee <span class="chip chip-fixed">fixed</span></div></div>
+    <div class="q-line-val" style="color:#5a3ab0;">${fmt(disp)}</div>
+  </div>`;
 
   // Equipment
   if (equipLines.length > 0) {
-    html += section('Equipment');
+    html += `<div class="invoice-section-head">Equipment</div>`;
     equipLines.forEach(e => {
-      html += row(e.label,'equip','chip-equip',
-        e.hrs+'hr × $'+e.rate+'/hr', fmt(e.cost),'equip');
+      html += `<div class="q-line">
+        <div class="q-line-left">
+          <div class="q-line-label">${e.label} <span class="chip chip-equip">equip</span></div>
+          <div class="q-line-sub">${e.hrs}hr × $${e.rate}/hr</div>
+        </div>
+        <div class="q-line-val" style="color:var(--amber);">${fmt(e.cost)}</div>
+      </div>`;
     });
   }
 
   // Job margin
   if (jobMarg > 0) {
-    html += section('Job Margin');
-    html += row('Materials &amp; equipment markup','margin','chip-margin',
-      Math.round(jobMarg*100)+'% on $'+Math.round(matAndFixed).toLocaleString()+' cost',
-      fmt(matBilled - matAndFixed),'margin-line');
+    html += `<div class="invoice-section-head">Margin</div>`;
+    html += `<div class="q-line">
+      <div class="q-line-left">
+        <div class="q-line-label">Materials &amp; equipment markup <span class="chip chip-margin">margin</span></div>
+        <div class="q-line-sub">${Math.round(jobMarg*100)}% on $${Math.round(matAndFixed).toLocaleString('en-CA')} cost</div>
+      </div>
+      <div class="q-line-val" style="color:var(--amber);">${fmt(matBilled - matAndFixed)}</div>
+    </div>`;
   }
 
   // Discount
   if (disc > 0) {
-    html += section('Client Discount');
-    html += `<div class="q-line">
-      <div class="q-line-left"><div class="q-line-name">Client discount (${Math.round(disc*100)}%)</div></div>
-      <div class="q-line-val discount">-${fmt(subtotal*disc)}</div>
+    html += `<div class="q-line disc">
+      <div class="q-line-left"><div class="q-line-label">Client discount (${Math.round(disc*100)}%) <span class="chip chip-disc">discount</span></div></div>
+      <div class="q-line-val">-${fmt(subtotal*disc)}</div>
     </div>`;
   }
 
   // GST
   if (gst) {
-    html += section('Tax');
+    html += `<div class="invoice-section-head">Tax</div>`;
     html += `<div class="q-line">
-      <div class="q-line-left"><div class="q-line-name">GST (5%)</div></div>
-      <div class="q-line-val gst">${fmt(gstAmt)}</div>
+      <div class="q-line-left"><div class="q-line-label">GST (5%) <span class="chip chip-tax">tax</span></div></div>
+      <div class="q-line-val">${fmt(gstAmt)}</div>
     </div>`;
   }
 
-  // Total row
-  html += `<div class="q-total-row">
-    <span class="q-total-label">Total invoice to client <span class="q-total-badge">${gst?'(incl. GST)':'(no GST)'}</span></span>
-    <span class="q-total-val">${fmt(clientTotal)}</span>
-  </div>`;
-
   g('quote-block').innerHTML = html;
-
-  g('q-footer').textContent =
-    'True cost: ' + fmt(trueCost) +
-    '   ·   Labour cost: ' + fmt(labourCost) +
-    '   ·   Labour billed: ' + fmt(labourBilled) +
-    '   ·   Materials cost: ' + fmt(matAndFixed) +
-    '   ·   Materials billed: ' + fmt(matBilled) +
-    '   ·   Profit: ' + fmt(profit);
 
   g('time-summary').textContent =
     'Field time: ' + totalHrs.toFixed(1) + ' crew hrs   ·   ' +
