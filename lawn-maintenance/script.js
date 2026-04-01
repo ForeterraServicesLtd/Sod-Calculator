@@ -148,6 +148,8 @@ function calc() {
   g('f-season').textContent = fmt(profit * visits);
   g('q-total').textContent  = fmt(clientTotal);
   g('q-gst-note').textContent = gst ? '(incl. GST)' : '(no GST)';
+  g('q-season-total').textContent = fmt(clientTotal * visits);
+  g('q-season-visits').textContent = '(' + visits + ' visits)';
 
   let html = '';
 

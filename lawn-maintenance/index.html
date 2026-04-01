@@ -256,9 +256,13 @@
 
   <div class="invoice-block">
     <div id="q-invoice-body"></div>
-    <div class="invoice-total">
+    <div class="invoice-total" style="border-radius:0;">
       <div class="invoice-total-label">Per-visit total <span id="q-gst-note"></span></div>
       <div class="invoice-total-val" id="q-total">$—</div>
+    </div>
+    <div class="invoice-total" style="background:#0e1016;border-top:1px solid rgba(255,255,255,0.08);border-radius:0 0 12px 12px;">
+      <div class="invoice-total-label">Season total <span id="q-season-visits"></span></div>
+      <div class="invoice-total-val" id="q-season-total">$—</div>
     </div>
   </div>
 
