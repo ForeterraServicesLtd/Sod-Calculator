@@ -15,7 +15,6 @@ function toggleSvc(id, cb) {
 // sliders
 [['sb-burden','sb-burden-out', v => v+'%'],
  ['sb-labmargin','sb-labmargin-out', v => v+'%'],
- ['sb-prodrate','sb-prodrate-out', v => Number(v).toLocaleString()],
  ['sb-margin','sb-margin-out', v => v+'%'],
  ['sb-disc','sb-disc-out', v => v+'%'],
 ].forEach(([id, outId, fn]) => {
@@ -24,7 +23,7 @@ function toggleSvc(id, cb) {
   el.addEventListener('input', () => { if (out) out.textContent = fn(el.value); calc(); });
 });
 
-['sb-area','sb-crew','sb-visits','sb-wage','sb-mob',
+['sb-area','sb-crew','sb-visits','sb-wage','sb-labhrs','sb-mob',
  'eq-walkbehind','eq-rideon',
  'edge-lft','edge-rate','trim-hrs','trim-rate',
  'blow-hrs','blow-rate','fert-mat','fert-labour',
@@ -42,7 +41,7 @@ function calc() {
   const wage     = num('sb-wage');
   const burden   = num('sb-burden') / 100;
   const labMarg  = num('sb-labmargin') / 100;
-  const prodRate = num('sb-prodrate') || 1;
+  const labHrs   = num('sb-labhrs');
   const mob      = num('sb-mob');
   const jobMarg  = num('sb-margin') / 100;
   const disc     = num('sb-disc') / 100;
@@ -51,18 +50,16 @@ function calc() {
   const loadedWage = wage * (1 + burden);
   const billedRate = loadedWage * (1 + labMarg);
 
-  // Mow hours from production rate
-  const mowHrs    = area > 0 ? roundHalf(area / prodRate) : 0;
-  const totalMowLabHrs = mowHrs * crew;
-  const mowLabCost   = totalMowLabHrs * loadedWage;
-  const mowLabBilled = totalMowLabHrs * billedRate;
+  // Labour from manual hours input
+  const totalLabHrs = labHrs * crew;
+  const mowLabCost   = totalLabHrs * loadedWage;
+  const mowLabBilled = totalLabHrs * billedRate;
 
-  g('sb-labhrs-pill').textContent = area > 0 ? fmtHrs(totalMowLabHrs) : '—';
-  g('sb-billedrate-display').textContent = '$' + billedRate.toFixed(2);
+  g('sb-billedrate-display').textContent = '$' + billedRate.toFixed(2) + '/hr';
 
   // Equipment cost (mow hrs)
-  const eqWalkCost  = num('eq-walkbehind') * mowHrs;
-  const eqRideCost  = num('eq-rideon') * mowHrs;
+  const eqWalkCost  = num('eq-walkbehind') * labHrs;
+  const eqRideCost  = num('eq-rideon') * labHrs;
   const eqCost      = eqWalkCost + eqRideCost;
 
   // Extra services
@@ -77,7 +74,7 @@ function calc() {
       billed: mowLabBilled + eqBilled,
       cost: mowLabCost + eqCost,
       labBilled: mowLabBilled,
-      sub: `${fmtHrs(totalMowLabHrs)} · ${crew}-person crew · $${billedRate.toFixed(2)}/hr · ${Number(prodRate).toLocaleString()} sq ft/hr`,
+      sub: `${fmtHrs(totalLabHrs)} · ${crew} worker${crew > 1 ? 's' : ''} × $${billedRate.toFixed(2)}/hr`,
       eqCost, isMow: true
     });
   }
@@ -191,7 +188,7 @@ function calc() {
   g('q-invoice-body').innerHTML = html;
   g('time-bar').textContent =
     `${area > 0 ? Number(area).toLocaleString() : '\u2014'} sq ft  \u00b7  ` +
-    `Mow time: ${fmtHrs(totalMowLabHrs)} (${crew}-person crew)  \u00b7  ` +
+    `Labour: ${fmtHrs(totalLabHrs)} (${crew} worker${crew > 1 ? 's' : ''})  \u00b7  ` +
     `${visits} visits/season  \u00b7  ` +
     `Season total: ${fmt(clientTotal * visits)}` +
     (gst ? ' (incl. GST)' : '');
