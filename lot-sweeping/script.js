@@ -90,9 +90,8 @@ function calc() {
   g('sb-crewrate-sub').textContent = 'billed rate per worker';
 
   // Calculate equipment hours and costs
-  let totalLabCost = 0;
-  let totalLabBilled = 0;
   let totalEquipCost = 0;
+  let totalJobHrs = 0;
   const activeEquip = [];
 
   EQUIPMENT.forEach(eq => {
@@ -105,21 +104,20 @@ function calc() {
     g(eq.id + '-hrs-display').textContent = active && sweepRate > 0 && area > 0 ? fmtHrs(hrs) : '—';
 
     if (active && hrs > 0) {
-      const labCost = hrs * loadedWage * crew;
-      const labBill = hrs * billedRate * crew;
       const eqCost = eqRate * hrs;
-
-      totalLabCost += labCost;
-      totalLabBilled += labBill;
       totalEquipCost += eqCost;
+      if (hrs > totalJobHrs) totalJobHrs = hrs;
 
       activeEquip.push({
         label: eq.label,
-        hrs, eqRate, eqCost,
-        sweepRate, labBill, labCost
+        hrs, eqRate, eqCost, sweepRate
       });
     }
   });
+
+  // Labour: crew works the longest equipment duration
+  const totalLabCost = totalJobHrs * loadedWage * crew;
+  const totalLabBilled = totalJobHrs * billedRate * crew;
 
   const fixedCost = truck + tip + mob;
   const equipAndFixed = totalEquipCost + fixedCost;
@@ -149,16 +147,14 @@ function calc() {
 
   // Labour
   html += `<div class="invoice-section-head">Labour</div>`;
-  if (activeEquip.length > 0) {
-    activeEquip.forEach(e => {
-      html += `<div class="q-line">
-        <div class="q-line-left">
-          <div class="q-line-label">${e.label} operator <span class="chip chip-labour">labour</span></div>
-          <div class="q-line-sub">${fmtHrs(e.hrs)} · ${crew} worker${crew > 1 ? 's' : ''} × $${billedRate.toFixed(2)}/hr · ${Number(e.sweepRate).toLocaleString()} sq ft/hr</div>
-        </div>
-        <div class="q-line-val" style="color:var(--blue);">${fmt(e.labBill)}</div>
-      </div>`;
-    });
+  if (totalJobHrs > 0) {
+    html += `<div class="q-line">
+      <div class="q-line-left">
+        <div class="q-line-label">Crew labour <span class="chip chip-labour">labour</span></div>
+        <div class="q-line-sub">${fmtHrs(totalJobHrs)} · ${crew} worker${crew > 1 ? 's' : ''} × $${billedRate.toFixed(2)}/hr</div>
+      </div>
+      <div class="q-line-val" style="color:var(--blue);">${fmt(totalLabBilled)}</div>
+    </div>`;
   } else {
     html += `<div class="q-line">
       <div class="q-line-left"><div class="q-line-label" style="color:var(--slate-light);">Select equipment to calculate labour</div></div>
@@ -167,18 +163,16 @@ function calc() {
   }
 
   // Equipment
-  if (totalEquipCost > 0) {
+  if (activeEquip.length > 0) {
     html += `<div class="invoice-section-head">Equipment</div>`;
     activeEquip.forEach(e => {
-      if (e.eqCost > 0) {
-        html += `<div class="q-line">
-          <div class="q-line-left">
-            <div class="q-line-label">${e.label} <span class="chip chip-equip">equip</span></div>
-            <div class="q-line-sub">${fmtHrs(e.hrs)} × $${e.eqRate}/hr</div>
-          </div>
-          <div class="q-line-val" style="color:var(--amber);">${fmt(e.eqCost)}</div>
-        </div>`;
-      }
+      html += `<div class="q-line">
+        <div class="q-line-left">
+          <div class="q-line-label">${e.label} <span class="chip chip-equip">equip</span></div>
+          <div class="q-line-sub">${fmtHrs(e.hrs)} × $${e.eqRate}/hr · ${Number(e.sweepRate).toLocaleString()} sq ft/hr</div>
+        </div>
+        <div class="q-line-val" style="color:var(--amber);">${fmt(e.eqCost)}</div>
+      </div>`;
     });
   }
 
