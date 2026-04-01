@@ -222,6 +222,12 @@ if (localStorage.getItem('theme') === 'dark') document.documentElement.setAttrib
 
 // Paywall check
 (async () => {
+  // Admin bypass
+  if (localStorage.getItem('ft_admin') === 'foreterra2026') {
+    document.getElementById('paywall').style.display = 'none';
+    document.getElementById('app-content').style.display = 'flex';
+    return;
+  }
   const active = localStorage.getItem('ft_active');
   const customerId = localStorage.getItem('ft_customer');
 
