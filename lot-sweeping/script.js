@@ -150,7 +150,7 @@ function calc() {
   if (totalJobHrs > 0) {
     html += `<div class="q-line">
       <div class="q-line-left">
-        <div class="q-line-label">Crew labour <span class="chip chip-labour">labour</span></div>
+        <div class="q-line-label">General labour <span class="chip chip-labour">labour</span></div>
         <div class="q-line-sub">${fmtHrs(totalJobHrs)} · ${crew} worker${crew > 1 ? 's' : ''} × $${billedRate.toFixed(2)}/hr</div>
       </div>
       <div class="q-line-val" style="color:var(--blue);">${fmt(totalLabBilled)}</div>
