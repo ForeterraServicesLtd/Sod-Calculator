@@ -4,17 +4,6 @@ const num = id => parseFloat(g(id).value) || 0;
 const roundHalf = n => n > 0 ? Math.ceil(n * 2) / 2 : 0;
 const fmtHrs = h => h === 0 ? '0 hrs' : h === 0.5 ? '0.5 hr' : h % 1 === 0 ? h + ' hrs' : h + ' hrs';
 
-let pricingMode = 'sqft';
-
-function setMode(m) {
-  pricingMode = m;
-  g('btn-sqft').classList.toggle('active', m === 'sqft');
-  g('btn-flat').classList.toggle('active', m === 'flat');
-  g('mode-sqft-fields').style.display = m === 'sqft' ? 'block' : 'none';
-  g('mode-flat-fields').style.display = m === 'flat' ? 'block' : 'none';
-  calc();
-}
-
 function toggleSvc(id, cb) {
   const lbl = g('lbl-' + id);
   const det = g('det-' + id);
@@ -26,7 +15,6 @@ function toggleSvc(id, cb) {
 // sliders
 [['sb-burden','sb-burden-out', v => v+'%'],
  ['sb-labmargin','sb-labmargin-out', v => v+'%'],
- ['sb-mowrate','sb-mowrate-out', v => '$'+parseFloat(v).toFixed(3)],
  ['sb-prodrate','sb-prodrate-out', v => Number(v).toLocaleString()],
  ['sb-margin','sb-margin-out', v => v+'%'],
  ['sb-disc','sb-disc-out', v => v+'%'],
@@ -36,7 +24,7 @@ function toggleSvc(id, cb) {
   el.addEventListener('input', () => { if (out) out.textContent = fn(el.value); calc(); });
 });
 
-['sb-area','sb-crew','sb-visits','sb-wage','sb-flatrate','sb-mob',
+['sb-area','sb-crew','sb-visits','sb-wage','sb-mob',
  'eq-walkbehind','eq-rideon',
  'edge-lft','edge-rate','trim-hrs','trim-rate',
  'blow-hrs','blow-rate','fert-mat','fert-labour',
@@ -57,8 +45,6 @@ function calc() {
   const burden   = num('sb-burden') / 100;
   const labMarg  = num('sb-labmargin') / 100;
   const prodRate = num('sb-prodrate') || 1;
-  const mowRate  = num('sb-mowrate');
-  const flatRate = num('sb-flatrate');
   const mob      = num('sb-mob');
   const jobMarg  = num('sb-margin') / 100;
   const disc     = num('sb-disc') / 100;
@@ -77,11 +63,6 @@ function calc() {
   g('sb-labhrs-pill').textContent = area > 0 ? fmtHrs(totalMowLabHrs) : '—';
   g('sb-billedrate-display').textContent = '$' + billedRate.toFixed(2);
 
-  // Mow base price
-  let mowPrice = 0;
-  if (pricingMode === 'sqft') mowPrice = area * mowRate;
-  else mowPrice = flatRate;
-
   // Equipment cost (mow hrs)
   const eqWalkCost  = num('eq-walkbehind') * mowHrs;
   const eqRideCost  = num('eq-rideon') * mowHrs;
@@ -92,17 +73,15 @@ function calc() {
 
   if (g('tog-mow').checked) {
     const matAndEquip = eqCost;
-    const matBilled = jobMarg < 1 ? matAndEquip / (1 - jobMarg) : matAndEquip * 2;
+    const eqBilled = jobMarg < 1 ? matAndEquip / (1 - jobMarg) : matAndEquip * 2;
     services.push({
       label: 'Lawn mowing',
       chip: 'chip-labour',
-      billed: mowPrice + (matBilled - matAndEquip),
+      billed: mowLabBilled + eqBilled,
       cost: mowLabCost + eqCost,
       labBilled: mowLabBilled,
-      sub: pricingMode === 'sqft'
-        ? `${Number(area).toLocaleString()} sq ft \u00d7 $${mowRate.toFixed(3)}/sq ft \u00b7 ${fmtHrs(totalMowLabHrs)} (${crew}-person crew)`
-        : `Flat rate \u00b7 ${fmtHrs(totalMowLabHrs)} (${crew}-person crew)`,
-      eqCost, matBilled, matAndEquip, isMow: true
+      sub: `${fmtHrs(totalMowLabHrs)} · ${crew}-person crew · $${billedRate.toFixed(2)}/hr · ${Number(prodRate).toLocaleString()} sq ft/hr`,
+      eqCost, isMow: true
     });
   }
 

@@ -101,27 +101,6 @@
   </div>
 
   <div class="sb-group">
-    <div class="sb-group-title">Pricing mode</div>
-    <div class="mode-toggle">
-      <button class="mode-btn active" id="btn-sqft" onclick="setMode('sqft')">By sq ft</button>
-      <button class="mode-btn" id="btn-flat" onclick="setMode('flat')">Flat rate</button>
-    </div>
-    <div id="mode-sqft-fields">
-      <div class="sb-field">
-        <div class="sb-label">Mow rate ($/sq ft) <strong id="sb-mowrate-out">$0.012</strong></div>
-        <div class="sb-note">Drives base mow price from area. Add services below.</div>
-        <input type="range" id="sb-mowrate" min="0.005" max="0.04" step="0.001" value="0.012">
-      </div>
-    </div>
-    <div id="mode-flat-fields" style="display:none;">
-      <div class="sb-field">
-        <div class="sb-label">Flat rate per visit ($)</div>
-        <input class="sb-input" type="number" id="sb-flatrate" value="110" min="0" step="5" placeholder="e.g. 110">
-      </div>
-    </div>
-  </div>
-
-  <div class="sb-group">
     <div class="sb-group-title">Labour</div>
     <div class="sb-field">
       <div class="sb-label">Wage per worker ($/hr)</div>
