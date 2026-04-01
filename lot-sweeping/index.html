@@ -21,13 +21,28 @@
       <span>Lot Sweeping Quote Engine — Spring Cleanup</span>
     </div>
   </div>
-  <div style="display:flex;align-items:center;gap:8px;">
-    <a href="../" style="display:flex;align-items:center;gap:6px;color:rgba(255,255,255,0.5);text-decoration:none;font-size:11px;padding:6px 12px;border:1px solid rgba(255,255,255,0.15);border-radius:6px;transition:all 0.15s;">
-      <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:currentColor;"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+  <div class="header-nav">
+    <a class="nav-btn" href="../">
+      <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
       Home
     </a>
-    <button id="theme-toggle" style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:none;border:1px solid rgba(255,255,255,0.15);border-radius:6px;cursor:pointer;transition:all 0.15s;" title="Toggle dark/light mode">
-      <svg id="theme-icon" viewBox="0 0 24 24" style="width:16px;height:16px;fill:rgba(255,255,255,0.5);"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.49.49 0 00-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 00-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6A3.6 3.6 0 1112 8.4a3.6 3.6 0 010 7.2z"/></svg>
+    <div class="dropdown" id="calc-dropdown">
+      <button class="nav-btn" onclick="this.parentElement.classList.toggle('open')">
+        <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-4 4h2v2h-2V7zm0 4h2v2h-2v-2zm-4-4h2v2h-2V7zm0 4h2v2h-2v-2zm-4-4h2v2H7V7zm0 4h2v2H7v-2zm-1 6v-2h10v2H6z"/></svg>
+        Pricing Calculators
+        <svg viewBox="0 0 24 24" style="width:10px;height:10px;margin-left:2px;"><path d="M7 10l5 5 5-5z"/></svg>
+      </button>
+      <div class="dropdown-menu">
+        <a href="../sod-calculator/">Sod Installation</a>
+        <a href="../lot-sweeping/">Lot Sweeping</a>
+      </div>
+    </div>
+    <a class="nav-btn" href="../request/">
+      <svg viewBox="0 0 24 24"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1s-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+      Request Service
+    </a>
+    <button id="theme-toggle" class="nav-btn" style="padding:6px 8px;" title="Toggle dark/light mode">
+      <svg id="theme-icon" viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.49.49 0 00-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 00-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6A3.6 3.6 0 1112 8.4a3.6 3.6 0 010 7.2z"/></svg>
     </button>
   </div>
 </div>
@@ -170,6 +185,7 @@
 </div>
 
 <script src="script.js"></script>
+<script>document.addEventListener('click',e=>{const dd=document.getElementById('calc-dropdown');if(!dd.contains(e.target))dd.classList.remove('open');});</script>
 <script>
 const toggle = document.getElementById('theme-toggle');
 const icon = document.getElementById('theme-icon');

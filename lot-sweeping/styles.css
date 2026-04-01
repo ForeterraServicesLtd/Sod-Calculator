@@ -34,6 +34,16 @@ body { font-family: var(--font); background: var(--surface); color: var(--slate)
 .header-logo h1 { font-size: 15px; font-weight: 500; color: white; }
 .header-logo span { font-size: 11px; color: rgba(255,255,255,0.5); font-weight: 300; display: block; letter-spacing: 0.04em; }
 .header-badge { font-family: var(--mono); font-size: 10px; color: var(--green-mid); letter-spacing: 0.08em; text-transform: uppercase; }
+.header-nav { display: flex; align-items: center; gap: 8px; }
+.nav-btn { display: flex; align-items: center; gap: 6px; color: rgba(255,255,255,0.5); text-decoration: none; font-size: 11px; font-family: 'DM Sans', sans-serif; padding: 6px 12px; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; transition: all 0.15s; background: none; cursor: pointer; }
+.nav-btn:hover { color: white; border-color: rgba(255,255,255,0.35); }
+.nav-btn svg { width: 14px; height: 14px; fill: currentColor; }
+.dropdown { position: relative; }
+.dropdown-menu { display: none; position: absolute; top: 100%; right: 0; margin-top: 6px; background: var(--header-bg); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; min-width: 200px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.3); z-index: 100; }
+.dropdown.open .dropdown-menu { display: block; }
+.dropdown-menu a { display: flex; align-items: center; gap: 8px; padding: 10px 14px; color: rgba(255,255,255,0.6); text-decoration: none; font-size: 11px; font-family: 'DM Sans', sans-serif; transition: all 0.15s; border-bottom: 1px solid rgba(255,255,255,0.06); }
+.dropdown-menu a:last-child { border-bottom: none; }
+.dropdown-menu a:hover { color: white; background: rgba(255,255,255,0.06); }
 
 .app { display: flex; flex: 1; }
 
