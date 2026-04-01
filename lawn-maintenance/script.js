@@ -141,11 +141,11 @@ function calc() {
   g('m-cost').textContent   = fmt(trueCostPerVisit);
   g('m-cost-season').textContent = fmt(trueCostPerVisit * visits) + ' season (' + visits + ' visits)';
   g('m-profit').textContent = fmt(profit);
-  g('m-season').textContent = fmt(afterDisc * visits) + ' season (' + visits + ' visits)';
+  g('m-season').textContent = fmt(profit * visits) + ' season (' + visits + ' visits)';
   g('f-cost').textContent   = fmt(trueCostPerVisit);
   g('f-lab').textContent    = fmt(totalLabBilled);
   g('f-visits').textContent = visits + ' visits';
-  g('f-season').textContent = fmt(clientTotal * visits);
+  g('f-season').textContent = fmt(profit * visits);
   g('q-total').textContent  = fmt(clientTotal);
   g('q-gst-note').textContent = gst ? '(incl. GST)' : '(no GST)';
 
