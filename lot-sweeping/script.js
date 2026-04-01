@@ -66,7 +66,7 @@ EQUIPMENT.forEach(eq => {
   el.addEventListener('input', () => { if (out) out.textContent = fn(el.value); calc(); });
 });
 
-['sb-area','sb-crew','sb-wage','sb-truck','sb-tip','sb-mob']
+['sb-area','sb-crew','sb-wage','sb-labhrs','sb-truck','sb-tip','sb-mob']
   .forEach(id => g(id).addEventListener('input', calc));
 ['sb-gst'].forEach(id => g(id).addEventListener('change', calc));
 
@@ -115,9 +115,10 @@ function calc() {
     }
   });
 
-  // Labour: crew works the longest equipment duration
-  const totalLabCost = totalJobHrs * loadedWage * crew;
-  const totalLabBilled = totalJobHrs * billedRate * crew;
+  // Labour: independent hours from input
+  const labHrs = num('sb-labhrs');
+  const totalLabCost = labHrs * loadedWage * crew;
+  const totalLabBilled = labHrs * billedRate * crew;
 
   const fixedCost = truck + tip + mob;
   const equipAndFixed = totalEquipCost + fixedCost;
@@ -147,11 +148,11 @@ function calc() {
 
   // Labour
   html += `<div class="invoice-section-head">Labour</div>`;
-  if (totalJobHrs > 0) {
+  if (labHrs > 0) {
     html += `<div class="q-line">
       <div class="q-line-left">
         <div class="q-line-label">General labour <span class="chip chip-labour">labour</span></div>
-        <div class="q-line-sub">${fmtHrs(totalJobHrs)} · ${crew} worker${crew > 1 ? 's' : ''} × $${billedRate.toFixed(2)}/hr</div>
+        <div class="q-line-sub">${fmtHrs(labHrs)} · ${crew} worker${crew > 1 ? 's' : ''} × $${billedRate.toFixed(2)}/hr</div>
       </div>
       <div class="q-line-val" style="color:var(--blue);">${fmt(totalLabBilled)}</div>
     </div>`;
