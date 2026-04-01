@@ -66,12 +66,13 @@ EQUIPMENT.forEach(eq => {
   el.addEventListener('input', () => { if (out) out.textContent = fn(el.value); calc(); });
 });
 
-['sb-area','sb-wage','sb-truck','sb-tip','sb-mob']
+['sb-area','sb-crew','sb-wage','sb-truck','sb-tip','sb-mob']
   .forEach(id => g(id).addEventListener('input', calc));
 ['sb-gst'].forEach(id => g(id).addEventListener('change', calc));
 
 function calc() {
   const area    = num('sb-area');
+  const crew    = num('sb-crew') || 1;
   const wage    = num('sb-wage');
   const burden  = num('sb-burden') / 100;
   const labMarg = num('sb-labmargin') / 100;
@@ -104,8 +105,8 @@ function calc() {
     g(eq.id + '-hrs-display').textContent = active && sweepRate > 0 && area > 0 ? fmtHrs(hrs) : '—';
 
     if (active && hrs > 0) {
-      const labCost = hrs * loadedWage;
-      const labBill = hrs * billedRate;
+      const labCost = hrs * loadedWage * crew;
+      const labBill = hrs * billedRate * crew;
       const eqCost = eqRate * hrs;
 
       totalLabCost += labCost;
@@ -153,7 +154,7 @@ function calc() {
       html += `<div class="q-line">
         <div class="q-line-left">
           <div class="q-line-label">${e.label} operator <span class="chip chip-labour">labour</span></div>
-          <div class="q-line-sub">${fmtHrs(e.hrs)} · $${billedRate.toFixed(2)}/hr · ${Number(e.sweepRate).toLocaleString()} sq ft/hr</div>
+          <div class="q-line-sub">${fmtHrs(e.hrs)} · ${crew} worker${crew > 1 ? 's' : ''} × $${billedRate.toFixed(2)}/hr · ${Number(e.sweepRate).toLocaleString()} sq ft/hr</div>
         </div>
         <div class="q-line-val" style="color:var(--blue);">${fmt(e.labBill)}</div>
       </div>`;
