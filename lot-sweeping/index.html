@@ -48,12 +48,12 @@
     <div class="sb-field">
       <div class="sb-label">Burden % <strong id="sb-burden-out">20%</strong></div>
       <div class="sb-note">WCB · payroll tax · CPP · EI</div>
-      <input type="range" id="sb-burden" min="0" max="50" step="1" value="20">
+      <input type="range" id="sb-burden" min="0" max="100" step="1" value="20">
     </div>
     <div class="sb-field">
       <div class="sb-label">Labour margin % <strong id="sb-labmargin-out" style="color:var(--blue);">0%</strong></div>
       <div class="sb-note">Profit markup on labour — separate from job margin</div>
-      <input type="range" id="sb-labmargin" min="0" max="60" step="1" value="0">
+      <input type="range" id="sb-labmargin" min="0" max="100" step="1" value="0">
     </div>
     <div class="crew-pill">
       <div class="crew-pill-rate" id="sb-crewrate">$—/hr</div>
@@ -62,42 +62,9 @@
   </div>
 
   <div class="sb-group">
-    <div class="sb-group-title">Sweep rates &amp; labour hours</div>
-    <div class="sb-note" style="margin-bottom:12px;">Sweep rate drives labour hours. Hours round up to nearest 0.5 hr.</div>
-
-    <div class="sb-field">
-      <div class="sb-label">Skid steer sweep rate (sq ft/hr) <strong id="sb-skid-rate-out">2,500</strong></div>
-      <input type="range" id="sb-skid-rate" min="0" max="10000" step="250" value="2500">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">
-        <span style="font-size:10px;color:var(--slate-light);">Calculated hrs:</span>
-        <span class="hrs-pill" id="skid-hrs-display">—</span>
-      </div>
-    </div>
-
-    <div style="border-top:0.5px solid var(--border-light);margin:12px 0;"></div>
-
-    <div class="sb-field">
-      <div class="sb-label">Push sweeper rate (sq ft/hr) <strong id="sb-push-rate-out">1,000</strong></div>
-      <input type="range" id="sb-push-rate" min="0" max="10000" step="250" value="1000">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">
-        <span style="font-size:10px;color:var(--slate-light);">Calculated hrs:</span>
-        <span class="hrs-pill" id="push-hrs-display">—</span>
-      </div>
-    </div>
-    <label class="phase-check" style="margin-top:6px;"><input type="checkbox" id="tog-push" checked> Include push sweeper operator</label>
-  </div>
-
-  <div class="sb-group">
-    <div class="sb-group-title">Equipment rates ($/hr)</div>
-    <div class="sb-note" style="margin-bottom:10px;">Equipment hours match sweep-rate-derived hours above.</div>
-    <div class="sb-field">
-      <div class="sb-label">Skid steer w/ sweeper ($/hr)</div>
-      <input class="sb-input" type="number" id="eq-skid-rate" value="150" min="0" step="5" placeholder="e.g. 150">
-    </div>
-    <div class="sb-field">
-      <div class="sb-label">Push sweeper ($/hr)</div>
-      <input class="sb-input" type="number" id="eq-push-rate" value="0" min="0" step="5" placeholder="0 if not used">
-    </div>
+    <div class="sb-group-title">Equipment</div>
+    <div class="sb-note" style="margin-bottom:10px;">Select equipment, set $/hr and sweep rate. Hours are calculated from lot size.</div>
+    <div id="equip-list"></div>
   </div>
 
   <div class="sb-group">

@@ -91,3 +91,7 @@ input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; border-radius
 .time-bar { background: white; border: 1px solid var(--border); border-radius: 8px; padding: 11px 16px; font-size: 11px; color: var(--slate-mid); font-family: var(--mono); line-height: 1.7; }
 .q-line.disc .q-line-label { color: var(--red); }
 .q-line.disc .q-line-val   { color: var(--red); }
+
+/* Equipment expandable inputs */
+.equip-inputs { display: none; padding: 4px 0 8px 22px; }
+.equip-inputs.open { display: block; }
