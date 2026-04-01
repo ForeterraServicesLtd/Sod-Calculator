@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Foreterra Services — Quote Tools</title>
+<title>Foreterra Services — Pricing</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -26,7 +26,7 @@
   .header-logo h1 { font-size: 13px; font-weight: 500; color: white; }
   .header-logo span { font-size: 10px; color: rgba(255,255,255,0.5); font-weight: 300; display: block; letter-spacing: 0.04em; }
   .header-nav { display: flex; align-items: center; gap: 6px; }
-  .nav-btn { display: flex; align-items: center; gap: 4px; color: rgba(255,255,255,0.5); text-decoration: none; font-size: 10px; font-family: 'DM Sans', sans-serif; padding: 4px 8px; border: 1px solid rgba(255,255,255,0.15); border-radius: 5px; transition: all 0.15s; cursor: pointer; background: none; white-space: nowrap; }
+  .nav-btn { display: flex; align-items: center; gap: 4px; color: rgba(255,255,255,0.5); text-decoration: none; font-size: 10px; font-family: 'DM Sans', sans-serif; padding: 4px 8px; border: 1px solid rgba(255,255,255,0.15); border-radius: 5px; transition: all 0.15s; background: none; cursor: pointer; white-space: nowrap; }
   .nav-btn:hover { color: rgba(255,255,255,0.8); border-color: rgba(255,255,255,0.3); }
   .nav-btn.active { color: white; border-color: var(--green); background: rgba(26,107,60,0.2); }
   .nav-btn svg { width: 12px; height: 12px; fill: currentColor; flex-shrink: 0; }
@@ -36,24 +36,26 @@
   .dropdown-menu a { display: flex; align-items: center; gap: 8px; padding: 10px 14px; color: rgba(255,255,255,0.6); text-decoration: none; font-size: 11px; font-family: 'DM Sans', sans-serif; transition: all 0.15s; border-bottom: 1px solid rgba(255,255,255,0.06); }
   .dropdown-menu a:last-child { border-bottom: none; }
   .dropdown-menu a:hover { color: white; background: rgba(255,255,255,0.06); }
-  .dropdown-menu a svg { width: 14px; height: 14px; fill: currentColor; flex-shrink: 0; }
-  .content { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; }
-  .hero { display: flex; flex-direction: column; align-items: center; margin-bottom: 36px; }
-  .hero img { width: 200px; height: auto; margin-bottom: 16px; }
-  .hero h1 { font-size: 28px; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 4px; }
-  .tagline { font-size: 13px; color: var(--slate-light); margin-bottom: 8px; }
-  .phone { font-family: 'DM Mono', monospace; font-size: 15px; color: var(--green); font-weight: 500; margin-bottom: 0; }
-  .phone a { color: var(--green); text-decoration: none; }
-  .phone a:hover { text-decoration: underline; }
-  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; max-width: 640px; width: 100%; }
+
   [data-theme="dark"] { --slate: #e0e4ec; --slate-mid: #a0a8b8; --slate-light: #6a7488; --border: #2a2e3a; --surface: #14161c; }
-  [data-theme="dark"] .card { background: #1a1d24; }
   [data-theme="dark"] .header { background: #0e1016; }
   [data-theme="dark"] .dropdown-menu { background: #0e1016; }
-  .card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 24px; text-decoration: none; color: var(--slate); transition: border-color 0.15s, box-shadow 0.15s; }
-  .card:hover { border-color: var(--green); box-shadow: 0 4px 12px rgba(26,107,60,0.1); }
-  .card-title { font-size: 16px; font-weight: 500; margin-bottom: 6px; }
-  .card-desc { font-size: 12px; color: var(--slate-mid); line-height: 1.5; }
+  [data-theme="dark"] .price-card { background: #1a1d24; }
+
+  .content { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 60px 20px; }
+  .pricing-title { font-size: 28px; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 8px; text-align: center; }
+  .pricing-sub { font-size: 14px; color: var(--slate-light); margin-bottom: 40px; text-align: center; max-width: 500px; line-height: 1.6; }
+  .price-card { background: white; border: 2px solid var(--green); border-radius: 16px; padding: 36px; max-width: 380px; width: 100%; text-align: center; }
+  .price-badge { display: inline-block; font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--green); background: rgba(26,107,60,0.1); padding: 4px 12px; border-radius: 20px; margin-bottom: 16px; }
+  .price-amount { font-family: 'DM Mono', monospace; font-size: 42px; font-weight: 500; color: var(--slate); margin-bottom: 4px; }
+  .price-amount span { font-size: 16px; color: var(--slate-light); font-weight: 400; }
+  .price-period { font-size: 13px; color: var(--slate-light); margin-bottom: 24px; }
+  .price-features { list-style: none; text-align: left; margin-bottom: 28px; }
+  .price-features li { font-size: 13px; color: var(--slate-mid); padding: 8px 0; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+  .price-features li:last-child { border-bottom: none; }
+  .price-features li svg { width: 16px; height: 16px; fill: var(--green); flex-shrink: 0; }
+  .subscribe-btn { display: inline-block; width: 100%; padding: 14px; background: var(--green); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 500; font-family: 'DM Sans', sans-serif; cursor: pointer; text-decoration: none; transition: background 0.15s; }
+  .subscribe-btn:hover { background: #14572f; }
 </style>
 </head>
 <body>
@@ -65,11 +67,11 @@
     </div>
     <div>
       <h1>Foreterra Services</h1>
-      <span>Internal Quote Tools</span>
+      <span>Pricing</span>
     </div>
   </div>
   <div class="header-nav">
-    <a class="nav-btn active" href="./">
+    <a class="nav-btn" href="../">
       <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
       Home
     </a>
@@ -80,21 +82,15 @@
         <svg viewBox="0 0 24 24" style="width:10px;height:10px;margin-left:2px;"><path d="M7 10l5 5 5-5z"/></svg>
       </button>
       <div class="dropdown-menu">
-        <a href="sod-calculator/">
-          <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-4H7l5-9v4h4l-5 9z"/></svg>
-          Sod Installation
-        </a>
-        <a href="lot-sweeping/">
-          <svg viewBox="0 0 24 24"><path d="M12 2L9.5 8.5H3L2 12l3 2v7c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-7l3-2-1-3.5h-6.5L12 2zM7 20v-5h2v5H7zm4 0v-5h2v5h-2zm4 0v-5h2v5h-2z"/></svg>
-          Lot Sweeping
-        </a>
+        <a href="../sod-calculator/">Sod Installation</a>
+        <a href="../lot-sweeping/">Lot Sweeping</a>
       </div>
     </div>
-    <a class="nav-btn" href="request/">
+    <a class="nav-btn" href="../request/">
       <svg viewBox="0 0 24 24"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1s-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
       Request Service
     </a>
-    <a class="nav-btn" href="pricing/">
+    <a class="nav-btn active" href="../pricing/">
       <svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
       Pricing
     </a>
@@ -111,25 +107,36 @@
 </div>
 
 <div class="content">
-  <div class="hero">
-    <img src="assets/logo-transparent-png.png" alt="Foreterra Services Logo">
-    <h1>Foreterra Services</h1>
-    <p class="tagline">Internal Quote Tools</p>
-    <p class="phone"><a href="tel:5872979275">587-297-9275</a></p>
-  </div>
-  <div class="cards">
-    <a class="card" href="sod-calculator/">
-      <div class="card-title">Sod Installation</div>
-      <div class="card-desc">Full quote engine for sod removal, grading, installation, materials, equipment, and margins.</div>
-    </a>
-    <a class="card" href="lot-sweeping/">
-      <div class="card-title">Lot Sweeping</div>
-      <div class="card-desc">Spring cleanup quote engine with skid steer and push sweeper rates, equipment, and fixed costs.</div>
-    </a>
-    <a class="card" href="request/">
-      <div class="card-title">Request Service</div>
-      <div class="card-desc">Submit a work request directly through our Jobber portal.</div>
-    </a>
+  <h1 class="pricing-title">Unlock Pricing Calculators</h1>
+  <p class="pricing-sub">Get access to all Foreterra Services quote engines. Build accurate estimates for sod installation, lot sweeping, and more.</p>
+
+  <div class="price-card">
+    <div class="price-badge">Monthly</div>
+    <div class="price-amount">$9.99 <span>CAD</span></div>
+    <div class="price-period">per month, cancel anytime</div>
+    <ul class="price-features">
+      <li>
+        <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+        Sod Installation Calculator
+      </li>
+      <li>
+        <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+        Lot Sweeping Calculator
+      </li>
+      <li>
+        <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+        All future calculators included
+      </li>
+      <li>
+        <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+        Live invoice breakdowns
+      </li>
+      <li>
+        <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+        Dark mode included
+      </li>
+    </ul>
+    <a class="subscribe-btn" href="https://buy.stripe.com/test_5kQ8wP3uu1KF3enaVg04802">Subscribe Now</a>
   </div>
 </div>
 
