@@ -31,11 +31,9 @@ function toggleSvc(id, cb) {
  'seed-mat','seed-labour','dethatch-equip','dethatch-labour',
 ].forEach(id => { const el = g(id); if(el) el.addEventListener('input', calc); });
 
-['sb-gst','sb-proptype','tog-mow','tog-edge','tog-trim','tog-blow',
+['sb-gst','tog-mow','tog-edge','tog-trim','tog-blow',
  'tog-fert','tog-seed','tog-dethatch',
 ].forEach(id => g(id).addEventListener('change', calc));
-
-const PROP_LABELS = { residential: 'Residential', commercial: 'Commercial', industrial: 'Industrial' };
 
 function calc() {
   const area     = num('sb-area');
@@ -49,7 +47,6 @@ function calc() {
   const jobMarg  = num('sb-margin') / 100;
   const disc     = num('sb-disc') / 100;
   const gst      = g('sb-gst').checked;
-  const propType = g('sb-proptype').value;
 
   const loadedWage = wage * (1 + burden);
   const billedRate = loadedWage * (1 + labMarg);
@@ -156,7 +153,7 @@ function calc() {
   if (services.length === 0) {
     html = `<div class="q-line"><div class="q-line-left"><div class="q-line-label" style="color:var(--slate-light);">Select at least one service from the sidebar</div></div><div class="q-line-val">$0</div></div>`;
   } else {
-    html += `<div class="invoice-section-head">Services \u2014 ${PROP_LABELS[propType]} \u00b7 ${Number(area).toLocaleString()} sq ft</div>`;
+    html += `<div class="invoice-section-head">Services \u2014 ${Number(area).toLocaleString()} sq ft</div>`;
     services.forEach(s => {
       html += `<div class="q-line">
         <div class="q-line-left">
@@ -193,7 +190,7 @@ function calc() {
 
   g('q-invoice-body').innerHTML = html;
   g('time-bar').textContent =
-    `${PROP_LABELS[propType]}  \u00b7  ${area > 0 ? Number(area).toLocaleString() : '\u2014'} sq ft  \u00b7  ` +
+    `${area > 0 ? Number(area).toLocaleString() : '\u2014'} sq ft  \u00b7  ` +
     `Mow time: ${fmtHrs(totalMowLabHrs)} (${crew}-person crew)  \u00b7  ` +
     `${visits} visits/season  \u00b7  ` +
     `Season total: ${fmt(clientTotal * visits)}` +
