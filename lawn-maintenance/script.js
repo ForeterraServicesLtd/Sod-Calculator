@@ -139,6 +139,7 @@ function calc() {
   g('m-quote').textContent  = fmt(afterDisc);
   g('m-sqft').textContent   = area > 0 ? '$' + perSqft.toFixed(3) + ' per sq ft' : '—';
   g('m-cost').textContent   = fmt(trueCostPerVisit);
+  g('m-cost-season').textContent = fmt(trueCostPerVisit * visits) + ' season (' + visits + ' visits)';
   g('m-profit').textContent = fmt(profit);
   g('m-season').textContent = fmt(afterDisc * visits) + ' season (' + visits + ' visits)';
   g('f-cost').textContent   = fmt(trueCostPerVisit);
