@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Foreterra Services — Herbicide Application Quote Engine</title>
+<title>Foreterra Services — Lawn Maintenance Quote Engine</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -14,11 +14,11 @@
 <div class="header">
   <div class="header-logo">
     <div class="mark">
-      <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:white;"><path d="M17.66 11.2c-.23-.3-.51-.56-.77-.82-.67-.6-1.43-1.03-2.07-1.66C13.33 7.26 13 4.85 13.95 3c-.95.23-1.78.75-2.49 1.32-2.59 2.08-3.61 5.75-2.39 8.90.04.1.08.2.08.33 0 .22-.15.42-.35.5-.23.1-.47.04-.66-.12a4.47 4.47 0 0 1-.94-1.3c-.73-1.49-.68-3.26.09-4.73C5.55 9.29 5 11.14 5 12.9c.02 4.37 3.54 7.9 7.9 7.9 4.36 0 7.9-3.54 7.9-7.9 0-1.52-.45-2.99-1.14-4.21-.28.74-.84 1.36-1.52 1.51z"/></svg>
+      <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:white;"><path d="M17 8C8 10 5.9 16.17 3.82 21.34L5.71 22l1-2.3A4.49 4.49 0 0 0 8 20c8 0 10-8 10-8s-2 2-6 2c2-2 4-6 5-6z"/></svg>
     </div>
     <div>
       <h1>Foreterra Services</h1>
-      <span>Herbicide Application Quote Engine</span>
+      <span>Lawn Maintenance Quote Engine</span>
     </div>
   </div>
   <div class="header-nav">
@@ -78,33 +78,54 @@
   <div class="sb-group">
     <div class="sb-group-title">Job details</div>
     <div class="sb-field">
-      <div class="sb-label">Treatment area (sq ft)</div>
-      <input class="sb-input" type="number" id="sb-area" value="7250" min="0" step="100" placeholder="e.g. 7250">
+      <div class="sb-label">Lawn area (sq ft)</div>
+      <input class="sb-input" type="number" id="sb-area" value="8680" min="0" step="100" placeholder="e.g. 8680">
     </div>
     <div class="sb-field">
-      <div class="sb-label">Application method</div>
-      <select class="sb-input" id="sb-method">
-        <option value="flatfan">Flat-fan foliar spray</option>
-        <option value="boom">Boom sprayer</option>
-        <option value="spot">Spot spray</option>
-        <option value="backpack">Backpack / hand sprayer</option>
+      <div class="sb-label">Property type</div>
+      <select class="sb-select" id="sb-proptype">
+        <option value="residential">Residential</option>
+        <option value="commercial" selected>Commercial</option>
+        <option value="industrial">Industrial</option>
       </select>
     </div>
     <div class="sb-field">
-      <div class="sb-label">Number of passes / sprays</div>
-      <input class="sb-input" type="number" id="sb-passes" value="1" min="1" step="1" placeholder="1">
+      <div class="sb-label">Number of crew</div>
+      <input class="sb-input" type="number" id="sb-crew" value="1" min="1" max="10" step="1">
+    </div>
+    <div class="sb-field">
+      <div class="sb-label">Number of visits (season)</div>
+      <input class="sb-input" type="number" id="sb-visits" value="15" min="1" step="1" placeholder="e.g. 15">
+    </div>
+    <div class="sb-note">Quote shows per-visit price. Season total shown in footer.</div>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-title">Pricing mode</div>
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="btn-sqft" onclick="setMode('sqft')">By sq ft</button>
+      <button class="mode-btn" id="btn-flat" onclick="setMode('flat')">Flat rate</button>
+    </div>
+    <div id="mode-sqft-fields">
+      <div class="sb-field">
+        <div class="sb-label">Mow rate ($/sq ft) <strong id="sb-mowrate-out">$0.012</strong></div>
+        <div class="sb-note">Drives base mow price from area. Add services below.</div>
+        <input type="range" id="sb-mowrate" min="0.005" max="0.04" step="0.001" value="0.012">
+      </div>
+    </div>
+    <div id="mode-flat-fields" style="display:none;">
+      <div class="sb-field">
+        <div class="sb-label">Flat rate per visit ($)</div>
+        <input class="sb-input" type="number" id="sb-flatrate" value="110" min="0" step="5" placeholder="e.g. 110">
+      </div>
     </div>
   </div>
 
   <div class="sb-group">
     <div class="sb-group-title">Labour</div>
     <div class="sb-field">
-      <div class="sb-label">Licensed applicator wage ($/hr)</div>
-      <input class="sb-input" type="number" id="sb-wage" value="35" min="0" step="0.5" placeholder="e.g. 35">
-    </div>
-    <div class="sb-field">
-      <div class="sb-label">Number of applicators</div>
-      <input class="sb-input" type="number" id="sb-applicators" value="2" min="1" step="1" placeholder="e.g. 2">
+      <div class="sb-label">Wage per worker ($/hr)</div>
+      <input class="sb-input" type="number" id="sb-wage" value="25" min="0" step="0.5" placeholder="e.g. 25">
     </div>
     <div class="sb-field">
       <div class="sb-label">Burden % <strong id="sb-burden-out">20%</strong></div>
@@ -116,127 +137,117 @@
       <input type="range" id="sb-labmargin" min="0" max="60" step="1" value="0">
     </div>
     <div class="sb-field">
-      <div class="sb-label">Application rate (sq ft/hr) <strong id="sb-apprate-out">3,000</strong></div>
-      <div class="sb-note">How fast the crew covers the area. Labour hours auto-calculate.</div>
-      <input type="range" id="sb-apprate" min="500" max="15000" step="250" value="3000">
+      <div class="sb-label">Mow rate (sq ft/hr) <strong id="sb-prodrate-out">5,000</strong></div>
+      <div class="sb-note">Used to estimate mow labour hours from area.</div>
+      <input type="range" id="sb-prodrate" min="500" max="15000" step="250" value="5000">
     </div>
     <div class="pill-display">
-      <div class="pill-val" id="sb-labhrs-display">—</div>
-      <div class="pill-sub" id="sb-labhrs-sub">labour hours · <span id="sb-billedrate">—</span> billed/hr</div>
+      <div class="pill-val" id="sb-labhrs-pill">—</div>
+      <div class="pill-sub" id="sb-labhrs-sub">est. labour hrs/visit · <span id="sb-billedrate-display">—</span>/hr billed</div>
     </div>
   </div>
 
   <div class="sb-group">
-    <div class="sb-group-title">Herbicide products</div>
-    <div class="sb-note" style="margin-bottom:10px;">Enable each product used. Enter rate ($/sq ft) or flat cost. Both can be used on the same job.</div>
+    <div class="sb-group-title">Services included</div>
+    <div class="sb-note" style="margin-bottom:10px;">Toggle services. Each adds a line to the invoice.</div>
 
-    <!-- Curtail M -->
-    <div class="herb-row">
-      <div class="herb-row-header">
-        <label class="phase-check" style="margin:0;">
-          <input type="checkbox" id="h-curtailm-tog" checked>
-          <span class="herb-row-name">Curtail M</span>
-        </label>
-        <span class="herb-row-total" id="h-curtailm-total">$—</span>
+    <!-- Mowing -->
+    <label class="svc-check active" id="lbl-mow">
+      <input type="checkbox" id="tog-mow" checked onchange="toggleSvc('mow', this)"> Lawn mowing
+    </label>
+
+    <!-- Edging -->
+    <label class="svc-check" id="lbl-edge">
+      <input type="checkbox" id="tog-edge" onchange="toggleSvc('edge', this)"> Lawn edging
+    </label>
+    <div class="svc-details" id="det-edge">
+      <div class="two-col">
+        <div><div class="det-label">Lineal ft of edge</div><input class="det-input" type="number" id="edge-lft" value="200" min="0" step="10" placeholder="200"></div>
+        <div><div class="det-label">$/lineal ft</div><input class="det-input" type="number" id="edge-rate" value="0.25" min="0" step="0.05" placeholder="0.25"></div>
       </div>
-      <div class="herb-fields">
-        <div>
-          <div class="herb-field-label">Rate ($/sq ft)</div>
-          <input class="sb-input" type="number" id="h-curtailm-rate" value="0.02" min="0" step="0.001" placeholder="0.02">
-        </div>
-        <div>
-          <div class="herb-field-label">Flat cost ($)</div>
-          <input class="sb-input" type="number" id="h-curtailm-flat" value="0" min="0" step="10" placeholder="0">
-        </div>
-      </div>
-      <div class="herb-pcp">Group 4 (clopyralid + MCPA ester) · PCP# 30914</div>
     </div>
 
-    <!-- Roundup -->
-    <div class="herb-row">
-      <div class="herb-row-header">
-        <label class="phase-check" style="margin:0;">
-          <input type="checkbox" id="h-roundup-tog" checked>
-          <span class="herb-row-name">Roundup Transorb HC</span>
-        </label>
-        <span class="herb-row-total" id="h-roundup-total">$—</span>
+    <!-- String trim -->
+    <label class="svc-check" id="lbl-trim">
+      <input type="checkbox" id="tog-trim" onchange="toggleSvc('trim', this)"> String trimming
+    </label>
+    <div class="svc-details" id="det-trim">
+      <div class="two-col">
+        <div><div class="det-label">Trim hours</div><input class="det-input" type="number" id="trim-hrs" value="0.5" min="0" step="0.5" placeholder="0.5"></div>
+        <div><div class="det-label">$/hr (billed)</div><input class="det-input" type="number" id="trim-rate" value="65" min="0" step="5" placeholder="65"></div>
       </div>
-      <div class="herb-fields">
-        <div>
-          <div class="herb-field-label">Rate ($/sq ft)</div>
-          <input class="sb-input" type="number" id="h-roundup-rate" value="0.005" min="0" step="0.001" placeholder="0.005">
-        </div>
-        <div>
-          <div class="herb-field-label">Flat cost ($)</div>
-          <input class="sb-input" type="number" id="h-roundup-flat" value="0" min="0" step="10" placeholder="0">
-        </div>
-      </div>
-      <div class="herb-pcp">Group 9 (Glyphosate) · PCP# 28198 · spot spray</div>
     </div>
 
-    <!-- PAR III -->
-    <div class="herb-row">
-      <div class="herb-row-header">
-        <label class="phase-check" style="margin:0;">
-          <input type="checkbox" id="h-par3-tog">
-          <span class="herb-row-name">PAR III</span>
-        </label>
-        <span class="herb-row-total" id="h-par3-total">$—</span>
+    <!-- Blowing -->
+    <label class="svc-check" id="lbl-blow">
+      <input type="checkbox" id="tog-blow" onchange="toggleSvc('blow', this)"> Blowing / cleanup
+    </label>
+    <div class="svc-details" id="det-blow">
+      <div class="two-col">
+        <div><div class="det-label">Blow hours</div><input class="det-input" type="number" id="blow-hrs" value="0.25" min="0" step="0.25" placeholder="0.25"></div>
+        <div><div class="det-label">$/hr (billed)</div><input class="det-input" type="number" id="blow-rate" value="55" min="0" step="5" placeholder="55"></div>
       </div>
-      <div class="herb-fields">
-        <div>
-          <div class="herb-field-label">Rate ($/sq ft)</div>
-          <input class="sb-input" type="number" id="h-par3-rate" value="0.015" min="0" step="0.001" placeholder="0.015">
-        </div>
-        <div>
-          <div class="herb-field-label">Flat cost ($)</div>
-          <input class="sb-input" type="number" id="h-par3-flat" value="0" min="0" step="10" placeholder="0">
-        </div>
-      </div>
-      <div class="herb-pcp">Group 4 (2,4-D, mecoprop-P, dicamba) · PCP# 27884 · lawn</div>
     </div>
 
-    <!-- Custom -->
-    <div class="herb-row">
-      <div class="herb-row-header">
-        <label class="phase-check" style="margin:0;">
-          <input type="checkbox" id="h-custom-tog">
-          <span class="herb-row-name">Custom product</span>
-        </label>
-        <span class="herb-row-total" id="h-custom-total">$—</span>
+    <!-- Fertilizing -->
+    <label class="svc-check" id="lbl-fert">
+      <input type="checkbox" id="tog-fert" onchange="toggleSvc('fert', this)"> Fertilizing
+    </label>
+    <div class="svc-details" id="det-fert">
+      <div class="two-col">
+        <div><div class="det-label">Material cost ($)</div><input class="det-input" type="number" id="fert-mat" value="40" min="0" step="5" placeholder="40"></div>
+        <div><div class="det-label">Labour flat ($)</div><input class="det-input" type="number" id="fert-labour" value="35" min="0" step="5" placeholder="35"></div>
       </div>
-      <div class="sb-field" style="margin-bottom:6px;">
-        <input class="sb-input" type="text" id="h-custom-name" placeholder="Product name / PCP#" value="">
+    </div>
+
+    <!-- Overseeding -->
+    <label class="svc-check" id="lbl-seed">
+      <input type="checkbox" id="tog-seed" onchange="toggleSvc('seed', this)"> Overseeding
+    </label>
+    <div class="svc-details" id="det-seed">
+      <div class="two-col">
+        <div><div class="det-label">Seed cost ($)</div><input class="det-input" type="number" id="seed-mat" value="60" min="0" step="5" placeholder="60"></div>
+        <div><div class="det-label">Labour flat ($)</div><input class="det-input" type="number" id="seed-labour" value="45" min="0" step="5" placeholder="45"></div>
       </div>
-      <div class="herb-fields">
-        <div>
-          <div class="herb-field-label">Rate ($/sq ft)</div>
-          <input class="sb-input" type="number" id="h-custom-rate" value="0" min="0" step="0.001" placeholder="0">
-        </div>
-        <div>
-          <div class="herb-field-label">Flat cost ($)</div>
-          <input class="sb-input" type="number" id="h-custom-flat" value="0" min="0" step="10" placeholder="0">
-        </div>
+    </div>
+
+    <!-- Dethatch / aerate -->
+    <label class="svc-check" id="lbl-dethatch">
+      <input type="checkbox" id="tog-dethatch" onchange="toggleSvc('dethatch', this)"> De-thatching / aerating
+    </label>
+    <div class="svc-details" id="det-dethatch">
+      <div class="two-col">
+        <div><div class="det-label">Equipment ($)</div><input class="det-input" type="number" id="dethatch-equip" value="100" min="0" step="10" placeholder="100"></div>
+        <div><div class="det-label">Labour flat ($)</div><input class="det-input" type="number" id="dethatch-labour" value="75" min="0" step="5" placeholder="75"></div>
       </div>
     </div>
   </div>
 
   <div class="sb-group">
-    <div class="sb-group-title">Fixed fees</div>
+    <div class="sb-group-title">Equipment ($/visit)</div>
+    <div class="sb-note" style="margin-bottom:8px;">Mower equipment cost applied to mow line. Optional.</div>
     <div class="sb-field">
-      <div class="sb-label">Setup fee ($)</div>
-      <div class="sb-note">Equipment calibration · chemical dosage · records. Non-negotiable.</div>
-      <input class="sb-input" type="number" id="sb-setup" value="70" min="0" step="10" placeholder="70">
+      <div class="sb-label">Walk-behind mower ($/hr)</div>
+      <input class="sb-input" type="number" id="eq-walkbehind" value="0" min="0" step="5" placeholder="0">
     </div>
     <div class="sb-field">
-      <div class="sb-label">Mobilization ($)</div>
-      <input class="sb-input" type="number" id="sb-mob" value="0" min="0" step="10" placeholder="0">
+      <div class="sb-label">Ride-on / zero turn ($/hr)</div>
+      <input class="sb-input" type="number" id="eq-rideon" value="0" min="0" step="5" placeholder="0">
+    </div>
+    <div class="sb-note">Hours mirror the mow production rate hours.</div>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-title">Fixed &amp; mobilization</div>
+    <div class="sb-field">
+      <div class="sb-label">Mobilization per visit ($)</div>
+      <input class="sb-input" type="number" id="sb-mob" value="0" min="0" step="5" placeholder="0">
     </div>
   </div>
 
   <div class="sb-group">
     <div class="sb-group-title">Job margin &amp; billing</div>
-    <div class="sb-note" style="margin-bottom:8px;">Applied to chemical &amp; fixed costs — not labour</div>
+    <div class="sb-note" style="margin-bottom:8px;">Applies to materials &amp; equipment — not labour</div>
     <div class="sb-field">
       <div class="sb-label">Job margin % <strong id="sb-margin-out" style="color:var(--green);">30%</strong></div>
       <input type="range" id="sb-margin" min="0" max="60" step="1" value="30">
@@ -245,45 +256,45 @@
       <div class="sb-label">Client discount % <strong id="sb-disc-out" style="color:var(--red);">0%</strong></div>
       <input type="range" id="sb-disc" min="0" max="30" step="1" value="0">
     </div>
-    <label class="phase-check"><input type="checkbox" id="sb-gst" checked> Apply 5% GST</label>
+    <label class="phase-check"><input type="checkbox" id="sb-gst"> Apply 5% GST</label>
   </div>
 
-</div><!-- /sidebar -->
+</div>
 
 <!-- MAIN -->
 <div class="main">
 
   <div class="metrics">
     <div class="mcard green">
-      <div class="mcard-label">Client quote (pre-GST)</div>
+      <div class="mcard-label">Per-visit quote (pre-GST)</div>
       <div class="mcard-val" id="m-quote">$—</div>
       <div class="mcard-sub" id="m-sqft">— per sq ft</div>
     </div>
     <div class="mcard blue">
-      <div class="mcard-label">Your true cost</div>
+      <div class="mcard-label">Your cost / visit</div>
       <div class="mcard-val" id="m-cost">$—</div>
-      <div class="mcard-sub">labour + chemical + fixed</div>
+      <div class="mcard-sub">labour + materials + equip</div>
     </div>
     <div class="mcard amber">
-      <div class="mcard-label">Your profit</div>
+      <div class="mcard-label">Profit / visit</div>
       <div class="mcard-val" id="m-profit">$—</div>
-      <div class="mcard-sub" id="m-margin-sub">combined margins</div>
+      <div class="mcard-sub" id="m-season">— season total</div>
     </div>
   </div>
 
-  <div class="section-header">Invoice breakdown</div>
+  <div class="section-header">Invoice breakdown — per visit</div>
 
   <div class="invoice-block">
     <div id="q-invoice-body"></div>
     <div class="invoice-total">
-      <div class="invoice-total-label">Total invoice to client <span id="q-gst-note"></span></div>
+      <div class="invoice-total-label">Per-visit total <span id="q-gst-note"></span></div>
       <div class="invoice-total-val" id="q-total">$—</div>
     </div>
   </div>
 
   <div class="invoice-footer">
     <div class="inv-foot-cell">
-      <div class="inv-foot-label">True cost</div>
+      <div class="inv-foot-label">True cost / visit</div>
       <div class="inv-foot-val" id="f-cost">$—</div>
     </div>
     <div class="inv-foot-cell">
@@ -291,12 +302,12 @@
       <div class="inv-foot-val" id="f-lab">$—</div>
     </div>
     <div class="inv-foot-cell">
-      <div class="inv-foot-label">Chemical billed</div>
-      <div class="inv-foot-val" id="f-chem">$—</div>
+      <div class="inv-foot-label">Season visits</div>
+      <div class="inv-foot-val" id="f-visits">—</div>
     </div>
     <div class="inv-foot-cell">
-      <div class="inv-foot-label">Profit</div>
-      <div class="inv-foot-val" id="f-profit" style="color:var(--green);">$—</div>
+      <div class="inv-foot-label">Season revenue</div>
+      <div class="inv-foot-val" id="f-season" style="color:var(--green);">$—</div>
     </div>
   </div>
 
