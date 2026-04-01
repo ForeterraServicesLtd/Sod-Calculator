@@ -136,7 +136,7 @@
         Dark mode included
       </li>
     </ul>
-    <a class="subscribe-btn" href="https://buy.stripe.com/test_5kQ8wP3uu1KF3enaVg04802">Subscribe Now</a>
+    <button class="subscribe-btn" id="subscribe-btn" onclick="handleSubscribe()">Subscribe Now</button>
   </div>
 </div>
 
@@ -153,6 +153,32 @@ function setTheme(t) {
   document.getElementById('settings-dropdown').classList.remove('open');
 }
 if (localStorage.getItem('theme') === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+
+// Check if already subscribed
+if (localStorage.getItem('ft_active') === 'true') {
+  document.getElementById('subscribe-btn').textContent = 'Already Subscribed';
+  document.getElementById('subscribe-btn').style.opacity = '0.6';
+  document.getElementById('subscribe-btn').style.cursor = 'default';
+}
+
+async function handleSubscribe() {
+  if (localStorage.getItem('ft_active') === 'true') return;
+  const btn = document.getElementById('subscribe-btn');
+  btn.textContent = 'Redirecting...';
+  btn.disabled = true;
+  try {
+    const res = await fetch('/api/create-checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    const data = await res.json();
+    if (data.url) window.location.href = data.url;
+    else { btn.textContent = 'Error — try again'; btn.disabled = false; }
+  } catch (err) {
+    btn.textContent = 'Error — try again';
+    btn.disabled = false;
+  }
+}
 </script>
 </body>
 </html>

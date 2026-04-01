@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Foreterra Services — Payment Successful</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root { --green: #1a6b3c; --slate: #2c3040; --slate-light: #8892a8; --surface: #f7f8fc; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--surface); color: var(--slate); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 40px 20px; }
+  .card { background: white; border: 1px solid #dde2ec; border-radius: 16px; padding: 48px; max-width: 420px; width: 100%; text-align: center; }
+  .card svg { width: 56px; height: 56px; fill: var(--green); margin-bottom: 20px; }
+  .card h1 { font-size: 22px; font-weight: 600; margin-bottom: 8px; }
+  .card p { font-size: 13px; color: var(--slate-light); line-height: 1.6; margin-bottom: 24px; }
+  .card a { display: inline-block; padding: 12px 28px; background: var(--green); color: white; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 500; transition: background 0.15s; }
+  .card a:hover { background: #14572f; }
+  .spinner { width: 40px; height: 40px; border: 3px solid #dde2ec; border-top-color: var(--green); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 20px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="card">
+  <div id="loading">
+    <div class="spinner"></div>
+    <p>Verifying your payment...</p>
+  </div>
+  <div id="success" style="display:none;">
+    <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+    <h1>Payment Successful!</h1>
+    <p>Your subscription is now active. You have full access to all Foreterra pricing calculators.</p>
+    <a href="../">Go to Dashboard</a>
+  </div>
+  <div id="error" style="display:none;">
+    <h1>Something went wrong</h1>
+    <p id="error-msg">We couldn't verify your payment. Please contact support.</p>
+    <a href="../pricing/">Try Again</a>
+  </div>
+</div>
+<script>
+(async () => {
+  const params = new URLSearchParams(window.location.search);
+  const sessionId = params.get('session_id');
+
+  if (!sessionId) {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('error').style.display = 'block';
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/verify-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ session_id: sessionId }),
+    });
+    const data = await res.json();
+
+    if (data.active) {
+      localStorage.setItem('ft_customer', data.customer);
+      if (data.email) localStorage.setItem('ft_email', data.email);
+      localStorage.setItem('ft_active', 'true');
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('success').style.display = 'block';
+    } else {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('error').style.display = 'block';
+    }
+  } catch (err) {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('error-msg').textContent = 'Network error. Please try refreshing.';
+    document.getElementById('error').style.display = 'block';
+  }
+})();
+</script>
+</body>
+</html>
