@@ -82,43 +82,46 @@ function calc() {
   if (g('tog-edge').checked) {
     const lft = num('edge-lft');
     const rate = num('edge-rate');
-    const val = lft * rate;
-    services.push({ label: 'Lawn edging', chip: 'chip-labour', billed: val, cost: val * 0.6, sub: `${lft} lineal ft \u00d7 $${rate}/ft`, isMow: false });
+    const billed = lft * rate;
+    const cost = lft * rate * (loadedWage / billedRate);
+    services.push({ label: 'Lawn edging', chip: 'chip-labour', billed, cost, labBilled: billed, sub: `${lft} lineal ft × $${rate}/ft`, isMow: false });
   }
 
   if (g('tog-trim').checked) {
     const hrs = num('trim-hrs');
     const rate = num('trim-rate');
-    const val = hrs * rate;
-    services.push({ label: 'String trimming', chip: 'chip-labour', billed: val, cost: val * 0.65, sub: `${fmtHrs(hrs)} \u00d7 $${rate}/hr`, isMow: false });
+    const billed = hrs * rate;
+    const cost = hrs * loadedWage * crew;
+    services.push({ label: 'String trimming', chip: 'chip-labour', billed, cost, labBilled: billed, sub: `${fmtHrs(hrs)} × $${rate}/hr`, isMow: false });
   }
 
   if (g('tog-blow').checked) {
     const hrs = num('blow-hrs');
     const rate = num('blow-rate');
-    const val = hrs * rate;
-    services.push({ label: 'Blowing / site cleanup', chip: 'chip-labour', billed: val, cost: val * 0.65, sub: `${fmtHrs(hrs)} \u00d7 $${rate}/hr`, isMow: false });
+    const billed = hrs * rate;
+    const cost = hrs * loadedWage * crew;
+    services.push({ label: 'Blowing / site cleanup', chip: 'chip-labour', billed, cost, labBilled: billed, sub: `${fmtHrs(hrs)} × $${rate}/hr`, isMow: false });
   }
 
   if (g('tog-fert').checked) {
     const mat = num('fert-mat');
     const lab = num('fert-labour');
     const matB = jobMarg < 1 ? mat / (1 - jobMarg) : mat * 2;
-    services.push({ label: 'Fertilizing', chip: 'chip-mat', billed: matB + lab, cost: mat + lab * 0.65, sub: `Material: $${mat} \u00b7 Labour: $${lab}`, isMow: false, hasMat: true });
+    services.push({ label: 'Fertilizing', chip: 'chip-mat', billed: matB + lab, cost: mat + lab, labBilled: lab, sub: `Material: $${mat} · Labour: $${lab}`, isMow: false, hasMat: true });
   }
 
   if (g('tog-seed').checked) {
     const mat = num('seed-mat');
     const lab = num('seed-labour');
     const matB = jobMarg < 1 ? mat / (1 - jobMarg) : mat * 2;
-    services.push({ label: 'Overseeding', chip: 'chip-mat', billed: matB + lab, cost: mat + lab * 0.65, sub: `Seed material: $${mat} \u00b7 Labour: $${lab}`, isMow: false, hasMat: true });
+    services.push({ label: 'Overseeding', chip: 'chip-mat', billed: matB + lab, cost: mat + lab, labBilled: lab, sub: `Seed material: $${mat} · Labour: $${lab}`, isMow: false, hasMat: true });
   }
 
   if (g('tog-dethatch').checked) {
     const equip = num('dethatch-equip');
     const lab = num('dethatch-labour');
     const equipB = jobMarg < 1 ? equip / (1 - jobMarg) : equip * 2;
-    services.push({ label: 'De-thatching / aerating', chip: 'chip-equip', billed: equipB + lab, cost: equip + lab * 0.65, sub: `Equipment: $${equip} \u00b7 Labour: $${lab}`, isMow: false });
+    services.push({ label: 'De-thatching / aerating', chip: 'chip-equip', billed: equipB + lab, cost: equip + lab, labBilled: lab, sub: `Equipment: $${equip} · Labour: $${lab}`, isMow: false });
   }
 
   const subtotalServices = services.reduce((a, s) => a + s.billed, 0);
@@ -131,7 +134,7 @@ function calc() {
   const trueCostPerVisit = services.reduce((a, s) => a + s.cost, 0) + mob;
   const profit = afterDisc - trueCostPerVisit;
   const perSqft = area > 0 ? afterDisc / area : 0;
-  const totalLabBilled = services.reduce((a, s) => a + (s.labBilled || s.billed * 0.7), 0);
+  const totalLabBilled = services.reduce((a, s) => a + (s.labBilled || 0), 0);
 
   g('m-quote').textContent  = fmt(afterDisc);
   g('m-sqft').textContent   = area > 0 ? '$' + perSqft.toFixed(3) + ' per sq ft' : '—';
