@@ -2,7 +2,7 @@ const g = id => document.getElementById(id);
 const fmt = n => '$' + Math.round(n).toLocaleString('en-CA');
 const num = id => parseFloat(g(id).value) || 0;
 const roundHalf = n => n > 0 ? Math.ceil(n * 2) / 2 : 0;
-const fmtHrs = h => h === 0 ? '0 hrs' : h === 0.5 ? '0.5 hr' : h % 1 === 0 ? h + ' hrs' : h + ' hrs';
+const fmtHrs = h => h === 0 ? '0 hrs' : h === 0.5 ? '0.5 hr' : h + ' hrs';
 
 function toggleSvc(id, cb) {
   const lbl = g('lbl-' + id);
@@ -12,7 +12,31 @@ function toggleSvc(id, cb) {
   calc();
 }
 
-// sliders
+// Service definitions
+const SERVICES = [
+  { id: 'mow',      label: 'Lawn mowing',            defaultRate: 5000,  hasMat: false, matId: null,            equipId: null },
+  { id: 'edge',     label: 'Lawn edging',             defaultRate: 3000,  hasMat: false, matId: null,            equipId: null },
+  { id: 'trim',     label: 'String trimming',         defaultRate: 2000,  hasMat: false, matId: null,            equipId: null },
+  { id: 'blow',     label: 'Blowing / cleanup',       defaultRate: 4000,  hasMat: false, matId: null,            equipId: null },
+  { id: 'fert',     label: 'Fertilizing',             defaultRate: 5000,  hasMat: true,  matId: 'fert-mat',      equipId: null },
+  { id: 'seed',     label: 'Overseeding',             defaultRate: 3000,  hasMat: true,  matId: 'seed-mat',      equipId: null },
+  { id: 'dethatch', label: 'De-thatching / aerating', defaultRate: 2000,  hasMat: false, matId: null,            equipId: 'dethatch-equip' },
+];
+
+// Wire efficiency sliders
+SERVICES.forEach(svc => {
+  const slider = g(svc.id + '-rate');
+  const out = g(svc.id + '-rate-out');
+  if (slider && out) {
+    out.textContent = Number(slider.value).toLocaleString();
+    slider.addEventListener('input', () => {
+      out.textContent = Number(slider.value).toLocaleString();
+      calc();
+    });
+  }
+});
+
+// Wire other sliders
 [['sb-burden','sb-burden-out', v => v+'%'],
  ['sb-labmargin','sb-labmargin-out', v => v+'%'],
  ['sb-margin','sb-margin-out', v => v+'%'],
@@ -23,11 +47,10 @@ function toggleSvc(id, cb) {
   el.addEventListener('input', () => { if (out) out.textContent = fn(el.value); calc(); });
 });
 
+// Wire inputs
 ['sb-area','sb-crew','sb-visits','sb-wage','sb-labhrs','sb-mob',
  'eq-walkbehind','eq-rideon',
- 'edge-lft','edge-rate','trim-hrs','trim-rate',
- 'blow-hrs','blow-rate','fert-mat','fert-labour',
- 'seed-mat','seed-labour','dethatch-equip','dethatch-labour',
+ 'fert-mat','seed-mat','dethatch-equip',
 ].forEach(id => { const el = g(id); if(el) el.addEventListener('input', calc); });
 
 ['sb-gst','tog-mow','tog-edge','tog-trim','tog-blow',
@@ -39,9 +62,9 @@ function calc() {
   const crew     = num('sb-crew') || 1;
   const visits   = num('sb-visits') || 1;
   const wage     = num('sb-wage');
+  const labHrs   = num('sb-labhrs');
   const burden   = num('sb-burden') / 100;
   const labMarg  = num('sb-labmargin') / 100;
-  const labHrs   = num('sb-labhrs');
   const mob      = num('sb-mob');
   const jobMarg  = num('sb-margin') / 100;
   const disc     = num('sb-disc') / 100;
@@ -50,79 +73,58 @@ function calc() {
   const loadedWage = wage * (1 + burden);
   const billedRate = loadedWage * (1 + labMarg);
 
-  // Labour from manual hours input
-  const totalLabHrs = labHrs * crew;
-  const mowLabCost   = totalLabHrs * loadedWage;
-  const mowLabBilled = totalLabHrs * billedRate;
-
   g('sb-billedrate-display').textContent = '$' + billedRate.toFixed(2) + '/hr';
 
-  // Equipment cost (mow hrs)
-  const eqWalkCost  = num('eq-walkbehind') * labHrs;
-  const eqRideCost  = num('eq-rideon') * labHrs;
-  const eqCost      = eqWalkCost + eqRideCost;
+  // Equipment cost (from general labour hours)
+  const eqWalkCost = num('eq-walkbehind') * labHrs;
+  const eqRideCost = num('eq-rideon') * labHrs;
+  const eqCost = eqWalkCost + eqRideCost;
 
-  // Extra services
+  // Build services
   const services = [];
 
-  if (g('tog-mow').checked) {
-    const matAndEquip = eqCost;
-    const eqBilled = jobMarg < 1 ? matAndEquip / (1 - jobMarg) : matAndEquip * 2;
+  SERVICES.forEach(svc => {
+    if (!g('tog-' + svc.id).checked) return;
+
+    const effRate = num(svc.id + '-rate') || 1;
+    const hrs = area > 0 ? roundHalf(area / effRate) : 0;
+    const totalHrs = hrs * crew;
+
+    // Update hours display
+    const hrsDisplay = g(svc.id + '-hrs-display');
+    if (hrsDisplay) hrsDisplay.textContent = area > 0 ? fmtHrs(hrs) : '—';
+
+    const labCost = totalHrs * loadedWage;
+    const labBilled = totalHrs * billedRate;
+
+    // Material or equipment cost
+    let matCost = 0;
+    if (svc.matId) matCost = num(svc.matId);
+    if (svc.equipId) matCost = num(svc.equipId);
+
+    // Add mowing equipment cost
+    let extraEqCost = 0;
+    if (svc.id === 'mow') extraEqCost = eqCost;
+
+    const matBilled = jobMarg < 1 ? (matCost + extraEqCost) / (1 - jobMarg) : (matCost + extraEqCost) * 2;
+    const totalBilled = labBilled + matBilled;
+    const totalCost = labCost + matCost + extraEqCost;
+
+    let sub = `${fmtHrs(hrs)} · ${crew} worker${crew > 1 ? 's' : ''} × $${billedRate.toFixed(2)}/hr · ${Number(effRate).toLocaleString()} sq ft/hr`;
+    if (matCost > 0) sub += ` · material: $${matCost}`;
+    if (extraEqCost > 0) sub += ` · equip: $${Math.round(extraEqCost)}`;
+
     services.push({
-      label: 'Lawn mowing',
-      chip: 'chip-labour',
-      billed: mowLabBilled + eqBilled,
-      cost: mowLabCost + eqCost,
-      labBilled: mowLabBilled,
-      sub: `${fmtHrs(totalLabHrs)} · ${crew} worker${crew > 1 ? 's' : ''} × $${billedRate.toFixed(2)}/hr`,
-      eqCost, isMow: true
+      label: svc.label,
+      chip: svc.matId ? 'chip-mat' : svc.equipId ? 'chip-equip' : 'chip-labour',
+      billed: totalBilled,
+      cost: totalCost,
+      labBilled,
+      sub,
+      isMow: svc.id === 'mow',
+      hasMat: !!svc.matId
     });
-  }
-
-  if (g('tog-edge').checked) {
-    const lft = num('edge-lft');
-    const rate = num('edge-rate');
-    const billed = lft * rate;
-    const cost = lft * rate * (loadedWage / billedRate);
-    services.push({ label: 'Lawn edging', chip: 'chip-labour', billed, cost, labBilled: billed, sub: `${lft} lineal ft × $${rate}/ft`, isMow: false });
-  }
-
-  if (g('tog-trim').checked) {
-    const hrs = num('trim-hrs');
-    const rate = num('trim-rate');
-    const billed = hrs * rate;
-    const cost = hrs * loadedWage * crew;
-    services.push({ label: 'String trimming', chip: 'chip-labour', billed, cost, labBilled: billed, sub: `${fmtHrs(hrs)} × $${rate}/hr`, isMow: false });
-  }
-
-  if (g('tog-blow').checked) {
-    const hrs = num('blow-hrs');
-    const rate = num('blow-rate');
-    const billed = hrs * rate;
-    const cost = hrs * loadedWage * crew;
-    services.push({ label: 'Blowing / site cleanup', chip: 'chip-labour', billed, cost, labBilled: billed, sub: `${fmtHrs(hrs)} × $${rate}/hr`, isMow: false });
-  }
-
-  if (g('tog-fert').checked) {
-    const mat = num('fert-mat');
-    const lab = num('fert-labour');
-    const matB = jobMarg < 1 ? mat / (1 - jobMarg) : mat * 2;
-    services.push({ label: 'Fertilizing', chip: 'chip-mat', billed: matB + lab, cost: mat + lab, labBilled: lab, sub: `Material: $${mat} · Labour: $${lab}`, isMow: false, hasMat: true });
-  }
-
-  if (g('tog-seed').checked) {
-    const mat = num('seed-mat');
-    const lab = num('seed-labour');
-    const matB = jobMarg < 1 ? mat / (1 - jobMarg) : mat * 2;
-    services.push({ label: 'Overseeding', chip: 'chip-mat', billed: matB + lab, cost: mat + lab, labBilled: lab, sub: `Seed material: $${mat} · Labour: $${lab}`, isMow: false, hasMat: true });
-  }
-
-  if (g('tog-dethatch').checked) {
-    const equip = num('dethatch-equip');
-    const lab = num('dethatch-labour');
-    const equipB = jobMarg < 1 ? equip / (1 - jobMarg) : equip * 2;
-    services.push({ label: 'De-thatching / aerating', chip: 'chip-equip', billed: equipB + lab, cost: equip + lab, labBilled: lab, sub: `Equipment: $${equip} · Labour: $${lab}`, isMow: false });
-  }
+  });
 
   const subtotalServices = services.reduce((a, s) => a + s.billed, 0);
   const fixedBilled = jobMarg < 1 ? mob / (1 - jobMarg) : mob * 2;
@@ -156,14 +158,16 @@ function calc() {
   if (services.length === 0) {
     html = `<div class="q-line"><div class="q-line-left"><div class="q-line-label" style="color:var(--slate-light);">Select at least one service from the sidebar</div></div><div class="q-line-val">$0</div></div>`;
   } else {
-    html += `<div class="invoice-section-head">Services \u2014 ${Number(area).toLocaleString()} sq ft</div>`;
+    html += `<div class="invoice-section-head">Services — ${Number(area).toLocaleString()} sq ft</div>`;
     services.forEach(s => {
+      const color = s.chip === 'chip-labour' ? 'var(--blue)' : s.chip === 'chip-mat' ? 'var(--green)' : 'var(--amber)';
+      const tag = s.isMow ? 'mow' : s.hasMat ? 'material' : 'service';
       html += `<div class="q-line">
         <div class="q-line-left">
-          <div class="q-line-label">${s.label} <span class="chip ${s.chip}">${s.isMow ? 'mow' : s.hasMat ? 'material' : 'service'}</span></div>
+          <div class="q-line-label">${s.label} <span class="chip ${s.chip}">${tag}</span></div>
           <div class="q-line-sub">${s.sub}</div>
         </div>
-        <div class="q-line-val" style="color:${s.chip === 'chip-labour' ? 'var(--blue)' : s.chip === 'chip-mat' ? 'var(--green)' : 'var(--amber)'};">${fmt(s.billed)}</div>
+        <div class="q-line-val" style="color:${color};">${fmt(s.billed)}</div>
       </div>`;
     });
   }
@@ -192,10 +196,12 @@ function calc() {
   }
 
   g('q-invoice-body').innerHTML = html;
+
+  const totalSvcHrs = services.reduce((a, s) => a + (s.labBilled / billedRate / crew || 0), 0);
   g('time-bar').textContent =
-    `${area > 0 ? Number(area).toLocaleString() : '\u2014'} sq ft  \u00b7  ` +
-    `Labour: ${fmtHrs(totalLabHrs)} (${crew} worker${crew > 1 ? 's' : ''})  \u00b7  ` +
-    `${visits} visits/season  \u00b7  ` +
+    `${area > 0 ? Number(area).toLocaleString() : '—'} sq ft  ·  ` +
+    `${services.length} service${services.length !== 1 ? 's' : ''}  ·  ` +
+    `${visits} visits/season  ·  ` +
     `Season total: ${fmt(clientTotal * visits)}` +
     (gst ? ' (incl. GST)' : '');
 }

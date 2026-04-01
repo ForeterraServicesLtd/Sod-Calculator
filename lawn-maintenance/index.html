@@ -125,15 +125,25 @@
     <label class="svc-check active" id="lbl-mow">
       <input type="checkbox" id="tog-mow" checked onchange="toggleSvc('mow', this)"> Lawn mowing
     </label>
+    <div class="svc-details open" id="det-mow">
+      <div class="det-label">Efficiency (sq ft/hr) <strong id="mow-rate-out">5,000</strong></div>
+      <input type="range" id="mow-rate" min="500" max="15000" step="250" value="5000">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;">
+        <span class="det-label" style="margin:0;">Calculated hrs:</span>
+        <span class="hrs-pill" id="mow-hrs-display">—</span>
+      </div>
+    </div>
 
     <!-- Edging -->
     <label class="svc-check" id="lbl-edge">
       <input type="checkbox" id="tog-edge" onchange="toggleSvc('edge', this)"> Lawn edging
     </label>
     <div class="svc-details" id="det-edge">
-      <div class="two-col">
-        <div><div class="det-label">Lineal ft of edge</div><input class="det-input" type="number" id="edge-lft" value="200" min="0" step="10" placeholder="200"></div>
-        <div><div class="det-label">$/lineal ft</div><input class="det-input" type="number" id="edge-rate" value="0.25" min="0" step="0.05" placeholder="0.25"></div>
+      <div class="det-label">Efficiency (sq ft/hr) <strong id="edge-rate-out">3,000</strong></div>
+      <input type="range" id="edge-rate" min="500" max="10000" step="250" value="3000">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;">
+        <span class="det-label" style="margin:0;">Calculated hrs:</span>
+        <span class="hrs-pill" id="edge-hrs-display">—</span>
       </div>
     </div>
 
@@ -142,9 +152,11 @@
       <input type="checkbox" id="tog-trim" onchange="toggleSvc('trim', this)"> String trimming
     </label>
     <div class="svc-details" id="det-trim">
-      <div class="two-col">
-        <div><div class="det-label">Trim hours</div><input class="det-input" type="number" id="trim-hrs" value="0.5" min="0" step="0.5" placeholder="0.5"></div>
-        <div><div class="det-label">$/hr (billed)</div><input class="det-input" type="number" id="trim-rate" value="65" min="0" step="5" placeholder="65"></div>
+      <div class="det-label">Efficiency (sq ft/hr) <strong id="trim-rate-out">2,000</strong></div>
+      <input type="range" id="trim-rate" min="500" max="10000" step="250" value="2000">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;">
+        <span class="det-label" style="margin:0;">Calculated hrs:</span>
+        <span class="hrs-pill" id="trim-hrs-display">—</span>
       </div>
     </div>
 
@@ -153,9 +165,11 @@
       <input type="checkbox" id="tog-blow" onchange="toggleSvc('blow', this)"> Blowing / cleanup
     </label>
     <div class="svc-details" id="det-blow">
-      <div class="two-col">
-        <div><div class="det-label">Blow hours</div><input class="det-input" type="number" id="blow-hrs" value="0.25" min="0" step="0.25" placeholder="0.25"></div>
-        <div><div class="det-label">$/hr (billed)</div><input class="det-input" type="number" id="blow-rate" value="55" min="0" step="5" placeholder="55"></div>
+      <div class="det-label">Efficiency (sq ft/hr) <strong id="blow-rate-out">4,000</strong></div>
+      <input type="range" id="blow-rate" min="500" max="15000" step="250" value="4000">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;">
+        <span class="det-label" style="margin:0;">Calculated hrs:</span>
+        <span class="hrs-pill" id="blow-hrs-display">—</span>
       </div>
     </div>
 
@@ -164,9 +178,15 @@
       <input type="checkbox" id="tog-fert" onchange="toggleSvc('fert', this)"> Fertilizing
     </label>
     <div class="svc-details" id="det-fert">
-      <div class="two-col">
-        <div><div class="det-label">Material cost ($)</div><input class="det-input" type="number" id="fert-mat" value="40" min="0" step="5" placeholder="40"></div>
-        <div><div class="det-label">Labour flat ($)</div><input class="det-input" type="number" id="fert-labour" value="35" min="0" step="5" placeholder="35"></div>
+      <div class="det-label">Efficiency (sq ft/hr) <strong id="fert-rate-out">5,000</strong></div>
+      <input type="range" id="fert-rate" min="500" max="15000" step="250" value="5000">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;">
+        <span class="det-label" style="margin:0;">Calculated hrs:</span>
+        <span class="hrs-pill" id="fert-hrs-display">—</span>
+      </div>
+      <div style="margin-top:6px;">
+        <div class="det-label">Material cost ($)</div>
+        <input class="det-input" type="number" id="fert-mat" value="40" min="0" step="5" placeholder="40">
       </div>
     </div>
 
@@ -175,9 +195,15 @@
       <input type="checkbox" id="tog-seed" onchange="toggleSvc('seed', this)"> Overseeding
     </label>
     <div class="svc-details" id="det-seed">
-      <div class="two-col">
-        <div><div class="det-label">Seed cost ($)</div><input class="det-input" type="number" id="seed-mat" value="60" min="0" step="5" placeholder="60"></div>
-        <div><div class="det-label">Labour flat ($)</div><input class="det-input" type="number" id="seed-labour" value="45" min="0" step="5" placeholder="45"></div>
+      <div class="det-label">Efficiency (sq ft/hr) <strong id="seed-rate-out">3,000</strong></div>
+      <input type="range" id="seed-rate" min="500" max="10000" step="250" value="3000">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;">
+        <span class="det-label" style="margin:0;">Calculated hrs:</span>
+        <span class="hrs-pill" id="seed-hrs-display">—</span>
+      </div>
+      <div style="margin-top:6px;">
+        <div class="det-label">Seed material cost ($)</div>
+        <input class="det-input" type="number" id="seed-mat" value="60" min="0" step="5" placeholder="60">
       </div>
     </div>
 
@@ -186,9 +212,15 @@
       <input type="checkbox" id="tog-dethatch" onchange="toggleSvc('dethatch', this)"> De-thatching / aerating
     </label>
     <div class="svc-details" id="det-dethatch">
-      <div class="two-col">
-        <div><div class="det-label">Equipment ($)</div><input class="det-input" type="number" id="dethatch-equip" value="100" min="0" step="10" placeholder="100"></div>
-        <div><div class="det-label">Labour flat ($)</div><input class="det-input" type="number" id="dethatch-labour" value="75" min="0" step="5" placeholder="75"></div>
+      <div class="det-label">Efficiency (sq ft/hr) <strong id="dethatch-rate-out">2,000</strong></div>
+      <input type="range" id="dethatch-rate" min="500" max="10000" step="250" value="2000">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;">
+        <span class="det-label" style="margin:0;">Calculated hrs:</span>
+        <span class="hrs-pill" id="dethatch-hrs-display">—</span>
+      </div>
+      <div style="margin-top:6px;">
+        <div class="det-label">Equipment cost ($)</div>
+        <input class="det-input" type="number" id="dethatch-equip" value="100" min="0" step="10" placeholder="100">
       </div>
     </div>
   </div>
