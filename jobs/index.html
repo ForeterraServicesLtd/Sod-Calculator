@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Foreterra — Job Board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root { --green: #1a6b3c; --green-pale: #eaf4ee; --blue: #1a3a6b; --blue-pale: #eaeff8; --amber: #7a4a0a; --amber-pale: #fdf0de; --slate: #2c3040; --slate-mid: #4a5068; --slate-light: #8892a8; --border: #dde2ec; --surface: #f7f8fc; --font: 'DM Sans', sans-serif; --mono: 'DM Mono', monospace; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font); background: var(--surface); color: var(--slate); min-height: 100vh; display: flex; flex-direction: column; }
+  .header { background: var(--slate); padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid var(--green); }
+  .header-logo { display: flex; align-items: center; gap: 12px; }
+  .header-logo .mark { width: 26px; height: 26px; background: var(--green); border-radius: 5px; display: flex; align-items: center; justify-content: center; }
+  .header-logo .mark svg { width: 14px; height: 14px; fill: white; }
+  .header-logo h1 { font-size: 13px; font-weight: 500; color: white; }
+  .header-logo span { font-size: 10px; color: rgba(255,255,255,0.5); display: block; }
+  .header-nav { display: flex; gap: 6px; }
+  .nav-btn { display: flex; align-items: center; gap: 4px; color: rgba(255,255,255,0.5); text-decoration: none; font-size: 10px; font-family: var(--font); padding: 4px 8px; border: 1px solid rgba(255,255,255,0.15); border-radius: 5px; background: none; cursor: pointer; white-space: nowrap; }
+  .nav-btn:hover { color: rgba(255,255,255,0.8); border-color: rgba(255,255,255,0.3); }
+  .nav-btn.active { color: white; border-color: var(--green); background: rgba(26,107,60,0.2); }
+  .nav-btn svg { width: 12px; height: 12px; fill: currentColor; }
+  .content { flex: 1; max-width: 800px; margin: 0 auto; width: 100%; padding: 30px 20px; }
+  .page-title { font-size: 22px; font-weight: 600; margin-bottom: 6px; }
+  .page-sub { font-size: 13px; color: var(--slate-light); margin-bottom: 20px; }
+  .filters { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+  .filter-btn { font-size: 11px; padding: 5px 12px; border: 1px solid var(--border); border-radius: 20px; background: white; color: var(--slate-mid); cursor: pointer; font-family: var(--font); }
+  .filter-btn.active { background: var(--green); color: white; border-color: var(--green); }
+  .filter-btn:hover { border-color: var(--green); }
+  .job-card { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; margin-bottom: 10px; cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s; }
+  .job-card:hover { border-color: var(--green); box-shadow: 0 2px 8px rgba(26,107,60,0.08); }
+  .job-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+  .job-title { font-size: 14px; font-weight: 500; }
+  .job-budget { font-family: var(--mono); font-size: 14px; font-weight: 500; color: var(--green); }
+  .job-meta { display: flex; gap: 12px; flex-wrap: wrap; }
+  .job-tag { font-size: 10px; color: var(--slate-light); display: flex; align-items: center; gap: 4px; }
+  .job-tag svg { width: 12px; height: 12px; fill: var(--slate-light); }
+  .chip-svc { display: inline-block; font-size: 9px; padding: 2px 8px; border-radius: 10px; font-weight: 500; background: var(--green-pale); color: var(--green); }
+  .chip-open { background: var(--blue-pale); color: var(--blue); }
+  .empty { text-align: center; padding: 40px; color: var(--slate-light); font-size: 13px; }
+  .bid-modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: center; justify-content: center; padding: 20px; }
+  .bid-modal.open { display: flex; }
+  .bid-box { background: white; border-radius: 12px; padding: 28px; max-width: 440px; width: 100%; }
+  .bid-box h2 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+  .bid-box .sub { font-size: 11px; color: var(--slate-light); margin-bottom: 16px; }
+  .form-group { margin-bottom: 14px; }
+  .form-label { font-size: 11px; font-weight: 500; color: var(--slate-mid); margin-bottom: 4px; display: block; }
+  .form-input { width: 100%; font-family: var(--mono); font-size: 12px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); color: var(--slate); outline: none; }
+  .form-input:focus { border-color: var(--green); background: white; }
+  textarea.form-input { font-family: var(--font); min-height: 80px; resize: vertical; }
+  .btn { width: 100%; padding: 12px; background: var(--green); color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 500; font-family: var(--font); cursor: pointer; }
+  .btn:hover { background: #14572f; }
+  .btn-cancel { background: none; border: 1px solid var(--border); color: var(--slate-mid); margin-top: 8px; }
+  .btn-cancel:hover { background: var(--surface); }
+  .msg { font-size: 12px; margin-top: 10px; text-align: center; padding: 8px; border-radius: 6px; }
+  .msg.error { color: #8a1a1a; background: #fdeaea; }
+  .msg.success { color: var(--green); background: var(--green-pale); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-logo">
+    <div class="mark">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-4H7l5-9v4h4l-5 9z"/></svg>
+    </div>
+    <div>
+      <h1>Foreterra Services</h1>
+      <span>Job Board</span>
+    </div>
+  </div>
+  <div class="header-nav">
+    <a class="nav-btn" href="../">
+      <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      Home
+    </a>
+    <a class="nav-btn active" href="../jobs/">Job Board</a>
+    <a class="nav-btn" href="../contractor/">Contractor Portal</a>
+  </div>
+</div>
+
+<div class="content">
+  <h1 class="page-title">Job Board</h1>
+  <p class="page-sub">Open jobs posted by homeowners. Click a job to see details and submit a bid.</p>
+
+  <div class="filters" id="filters">
+    <button class="filter-btn active" onclick="filterJobs('all')">All</button>
+    <button class="filter-btn" onclick="filterJobs('Sod Installation')">Sod</button>
+    <button class="filter-btn" onclick="filterJobs('Lot Sweeping')">Sweeping</button>
+    <button class="filter-btn" onclick="filterJobs('Herbicide Application')">Herbicide</button>
+    <button class="filter-btn" onclick="filterJobs('Lawn Maintenance')">Lawn</button>
+    <button class="filter-btn" onclick="filterJobs('Landscaping')">Landscaping</button>
+  </div>
+
+  <div id="jobs-list">
+    <p style="font-size:12px;color:var(--slate-light);">Loading jobs...</p>
+  </div>
+</div>
+
+<!-- Bid modal -->
+<div class="bid-modal" id="bid-modal">
+  <div class="bid-box">
+    <h2 id="bid-job-title">Submit Bid</h2>
+    <p class="sub" id="bid-job-sub"></p>
+    <div class="form-group">
+      <label class="form-label">Your bid amount ($)</label>
+      <input class="form-input" type="number" id="bid-amount" placeholder="e.g. 1500" min="0" step="50">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Message to homeowner</label>
+      <textarea class="form-input" id="bid-message" placeholder="Introduce yourself, explain your approach, timeline..."></textarea>
+    </div>
+    <button class="btn" onclick="submitBid()">Submit Bid</button>
+    <button class="btn btn-cancel" onclick="closeBidModal()">Cancel</button>
+    <div id="bid-msg"></div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://prripeyvxhnqxdcrrmdw.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBycmlwZXl2eGhucXhkY3JybWR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwODQ0NTksImV4cCI6MjA5MDY2MDQ1OX0.LL7zKnUzMZPp8wynmXPRl21g8VEjpsk3y8C2spRCswQ';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let allJobs = [];
+let currentFilter = 'all';
+let currentJobId = null;
+
+async function loadJobs() {
+  const { data, error } = await sb.from('jobs').select('*').eq('status', 'open').order('created_at', { ascending: false });
+  if (error) {
+    document.getElementById('jobs-list').innerHTML = '<p class="empty">Error loading jobs.</p>';
+    return;
+  }
+  allJobs = data || [];
+  renderJobs();
+}
+
+function filterJobs(type) {
+  currentFilter = type;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.textContent === type || (type === 'all' && b.textContent === 'All')));
+  renderJobs();
+}
+
+function renderJobs() {
+  const filtered = currentFilter === 'all' ? allJobs : allJobs.filter(j => j.service_type === currentFilter);
+  const container = document.getElementById('jobs-list');
+
+  if (filtered.length === 0) {
+    container.innerHTML = '<p class="empty">No open jobs found. Check back later!</p>';
+    return;
+  }
+
+  container.innerHTML = filtered.map(j => {
+    const budget = j.budget_low && j.budget_high
+      ? `$${j.budget_low.toLocaleString()} – $${j.budget_high.toLocaleString()}`
+      : j.budget_low ? `From $${j.budget_low.toLocaleString()}` : 'Budget TBD';
+    const date = new Date(j.created_at).toLocaleDateString('en-CA', { month: 'short', day: 'numeric' });
+    return `
+      <div class="job-card" onclick="openBid('${j.id}', '${j.title.replace(/'/g, "\\'")}', '${j.service_type} · ${j.location}')">
+        <div class="job-header">
+          <div>
+            <div class="job-title">${j.title}</div>
+            <span class="chip-svc">${j.service_type}</span>
+          </div>
+          <div class="job-budget">${budget}</div>
+        </div>
+        <div class="job-meta">
+          <span class="job-tag">
+            <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>
+            ${j.location}
+          </span>
+          ${j.area_sqft ? `<span class="job-tag">${j.area_sqft.toLocaleString()} sq ft</span>` : ''}
+          <span class="job-tag">${date}</span>
+          <span class="chip-svc chip-open">open</span>
+        </div>
+        ${j.description ? `<p style="font-size:11px;color:var(--slate-mid);margin-top:8px;line-height:1.5;">${j.description}</p>` : ''}
+      </div>`;
+  }).join('');
+}
+
+function openBid(jobId, title, sub) {
+  const contractor = localStorage.getItem('ft_contractor');
+  if (!contractor) {
+    if (confirm('You need a contractor account to bid. Go to the Contractor Portal?')) {
+      window.location.href = '../contractor/';
+    }
+    return;
+  }
+  currentJobId = jobId;
+  document.getElementById('bid-job-title').textContent = title;
+  document.getElementById('bid-job-sub').textContent = sub;
+  document.getElementById('bid-amount').value = '';
+  document.getElementById('bid-message').value = '';
+  document.getElementById('bid-msg').textContent = '';
+  document.getElementById('bid-modal').classList.add('open');
+}
+
+function closeBidModal() {
+  document.getElementById('bid-modal').classList.remove('open');
+  currentJobId = null;
+}
+
+async function submitBid() {
+  const amount = parseInt(document.getElementById('bid-amount').value);
+  const message = document.getElementById('bid-message').value.trim();
+  const contractor = JSON.parse(localStorage.getItem('ft_contractor') || '{}');
+
+  if (!amount || amount <= 0) {
+    document.getElementById('bid-msg').className = 'msg error';
+    document.getElementById('bid-msg').textContent = 'Enter a valid bid amount.';
+    return;
+  }
+
+  const { error } = await sb.from('bids').insert({
+    job_id: currentJobId,
+    contractor_id: contractor.id,
+    amount,
+    message
+  });
+
+  if (error) {
+    document.getElementById('bid-msg').className = 'msg error';
+    document.getElementById('bid-msg').textContent = error.message;
+    return;
+  }
+
+  document.getElementById('bid-msg').className = 'msg success';
+  document.getElementById('bid-msg').textContent = 'Bid submitted successfully!';
+  setTimeout(closeBidModal, 1500);
+}
+
+// Close modal on backdrop click
+document.getElementById('bid-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('bid-modal')) closeBidModal();
+});
+
+loadJobs();
+</script>
+</body>
+</html>

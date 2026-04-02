@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Foreterra — Contractor Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root { --green: #1a6b3c; --green-pale: #eaf4ee; --blue: #1a3a6b; --blue-pale: #eaeff8; --slate: #2c3040; --slate-mid: #4a5068; --slate-light: #8892a8; --border: #dde2ec; --surface: #f7f8fc; --font: 'DM Sans', sans-serif; --mono: 'DM Mono', monospace; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font); background: var(--surface); color: var(--slate); min-height: 100vh; display: flex; flex-direction: column; }
+  .header { background: var(--slate); padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid var(--green); }
+  .header-logo { display: flex; align-items: center; gap: 12px; }
+  .header-logo .mark { width: 26px; height: 26px; background: var(--green); border-radius: 5px; display: flex; align-items: center; justify-content: center; }
+  .header-logo .mark svg { width: 14px; height: 14px; fill: white; }
+  .header-logo h1 { font-size: 13px; font-weight: 500; color: white; }
+  .header-logo span { font-size: 10px; color: rgba(255,255,255,0.5); display: block; }
+  .header-nav { display: flex; gap: 6px; }
+  .nav-btn { display: flex; align-items: center; gap: 4px; color: rgba(255,255,255,0.5); text-decoration: none; font-size: 10px; font-family: var(--font); padding: 4px 8px; border: 1px solid rgba(255,255,255,0.15); border-radius: 5px; background: none; cursor: pointer; white-space: nowrap; }
+  .nav-btn:hover { color: rgba(255,255,255,0.8); border-color: rgba(255,255,255,0.3); }
+  .nav-btn.active { color: white; border-color: var(--green); background: rgba(26,107,60,0.2); }
+  .nav-btn svg { width: 12px; height: 12px; fill: currentColor; }
+  .content { flex: 1; max-width: 600px; margin: 0 auto; width: 100%; padding: 40px 20px; }
+  .page-title { font-size: 22px; font-weight: 600; margin-bottom: 6px; }
+  .page-sub { font-size: 13px; color: var(--slate-light); margin-bottom: 28px; line-height: 1.5; }
+  .card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 28px; }
+  .form-group { margin-bottom: 16px; }
+  .form-group:last-child { margin-bottom: 0; }
+  .form-label { font-size: 11px; font-weight: 500; color: var(--slate-mid); margin-bottom: 4px; display: block; }
+  .form-input { width: 100%; font-family: var(--mono); font-size: 12px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); color: var(--slate); outline: none; }
+  .form-input:focus { border-color: var(--green); background: white; }
+  select.form-input { font-family: var(--font); font-size: 12px; cursor: pointer; }
+  .form-note { font-size: 10px; color: var(--slate-light); margin-top: 4px; }
+  .checkbox-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+  .checkbox-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--slate-mid); padding: 5px 10px; border: 1px solid var(--border); border-radius: 6px; cursor: pointer; background: var(--surface); }
+  .checkbox-item:has(input:checked) { background: var(--green-pale); border-color: var(--green); color: var(--green); }
+  .checkbox-item input { width: 12px; height: 12px; accent-color: var(--green); }
+  .btn { width: 100%; padding: 12px; background: var(--green); color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 500; font-family: var(--font); cursor: pointer; margin-top: 20px; }
+  .btn:hover { background: #14572f; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .msg { font-size: 12px; margin-top: 12px; text-align: center; padding: 8px; border-radius: 6px; }
+  .msg.error { color: #8a1a1a; background: #fdeaea; }
+  .msg.success { color: var(--green); background: var(--green-pale); }
+  .tab-bar { display: flex; gap: 6px; margin-bottom: 24px; }
+  .tab { padding: 8px 16px; font-size: 12px; border: 1px solid var(--border); border-radius: 6px; cursor: pointer; background: white; color: var(--slate-mid); font-family: var(--font); }
+  .tab.active { background: var(--green); color: white; border-color: var(--green); }
+  .hidden { display: none; }
+  a.link { color: var(--green); text-decoration: none; font-size: 12px; }
+  a.link:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-logo">
+    <div class="mark">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-4H7l5-9v4h4l-5 9z"/></svg>
+    </div>
+    <div>
+      <h1>Foreterra Services</h1>
+      <span>Contractor Portal</span>
+    </div>
+  </div>
+  <div class="header-nav">
+    <a class="nav-btn" href="../">
+      <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      Home
+    </a>
+    <a class="nav-btn" href="../jobs/">
+      <svg viewBox="0 0 24 24"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1s-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+      Job Board
+    </a>
+    <a class="nav-btn active" href="../contractor/">Contractor Portal</a>
+  </div>
+</div>
+
+<div class="content">
+  <!-- Login/Signup tabs -->
+  <div id="auth-section">
+    <h1 class="page-title">Contractor Portal</h1>
+    <p class="page-sub">Sign up or log in to browse jobs and submit bids.</p>
+
+    <div class="tab-bar">
+      <button class="tab active" onclick="showTab('signup')">Sign Up</button>
+      <button class="tab" onclick="showTab('login')">Log In</button>
+    </div>
+
+    <!-- Signup form -->
+    <div class="card" id="signup-form">
+      <div class="form-group">
+        <label class="form-label">Full name</label>
+        <input class="form-input" type="text" id="s-name" placeholder="John Smith">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Company name</label>
+        <input class="form-input" type="text" id="s-company" placeholder="Smith Landscaping Ltd.">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input class="form-input" type="email" id="s-email" placeholder="john@example.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Phone</label>
+        <input class="form-input" type="tel" id="s-phone" placeholder="587-555-1234">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input class="form-input" type="password" id="s-password" placeholder="Min 6 characters">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Service area</label>
+        <input class="form-input" type="text" id="s-area" placeholder="Grande Prairie, AB">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Services you offer</label>
+        <div class="checkbox-grid">
+          <label class="checkbox-item"><input type="checkbox" value="Sod Installation"> Sod Installation</label>
+          <label class="checkbox-item"><input type="checkbox" value="Lot Sweeping"> Lot Sweeping</label>
+          <label class="checkbox-item"><input type="checkbox" value="Herbicide Application"> Herbicide</label>
+          <label class="checkbox-item"><input type="checkbox" value="Lawn Maintenance"> Lawn Maintenance</label>
+          <label class="checkbox-item"><input type="checkbox" value="Snow Removal"> Snow Removal</label>
+          <label class="checkbox-item"><input type="checkbox" value="Landscaping"> Landscaping</label>
+        </div>
+      </div>
+      <button class="btn" id="signup-btn" onclick="handleSignup()">Create Account</button>
+      <div id="signup-msg"></div>
+    </div>
+
+    <!-- Login form -->
+    <div class="card hidden" id="login-form">
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input class="form-input" type="email" id="l-email" placeholder="john@example.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input class="form-input" type="password" id="l-password" placeholder="Your password">
+      </div>
+      <button class="btn" id="login-btn" onclick="handleLogin()">Log In</button>
+      <div id="login-msg"></div>
+    </div>
+  </div>
+
+  <!-- Dashboard (shown when logged in) -->
+  <div id="dashboard-section" class="hidden">
+    <h1 class="page-title">Welcome, <span id="d-name"></span></h1>
+    <p class="page-sub"><span id="d-company"></span> · <span id="d-area"></span></p>
+
+    <div style="display:flex;gap:8px;margin-bottom:20px;">
+      <a class="btn" href="../jobs/" style="text-align:center;text-decoration:none;display:block;">Browse Job Board</a>
+    </div>
+
+    <h2 style="font-size:14px;font-weight:500;margin-bottom:12px;">My Bids</h2>
+    <div id="my-bids">
+      <p style="font-size:12px;color:var(--slate-light);">Loading...</p>
+    </div>
+
+    <button class="btn" style="background:var(--slate);margin-top:24px;" onclick="handleLogout()">Log Out</button>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://prripeyvxhnqxdcrrmdw.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBycmlwZXl2eGhucXhkY3JybWR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwODQ0NTksImV4cCI6MjA5MDY2MDQ1OX0.LL7zKnUzMZPp8wynmXPRl21g8VEjpsk3y8C2spRCswQ';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+function showTab(tab) {
+  document.getElementById('signup-form').classList.toggle('hidden', tab !== 'signup');
+  document.getElementById('login-form').classList.toggle('hidden', tab !== 'login');
+  document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', (tab === 'signup' && i === 0) || (tab === 'login' && i === 1)));
+}
+
+function showMsg(id, text, type) {
+  const el = document.getElementById(id);
+  el.className = 'msg ' + type;
+  el.textContent = text;
+}
+
+async function handleSignup() {
+  const name = document.getElementById('s-name').value.trim();
+  const company = document.getElementById('s-company').value.trim();
+  const email = document.getElementById('s-email').value.trim();
+  const phone = document.getElementById('s-phone').value.trim();
+  const password = document.getElementById('s-password').value;
+  const area = document.getElementById('s-area').value.trim();
+  const services = [...document.querySelectorAll('.checkbox-grid input:checked')].map(c => c.value);
+
+  if (!name || !email || !password) return showMsg('signup-msg', 'Name, email, and password are required.', 'error');
+  if (password.length < 6) return showMsg('signup-msg', 'Password must be at least 6 characters.', 'error');
+
+  document.getElementById('signup-btn').disabled = true;
+
+  // Sign up with Supabase Auth
+  const { data: authData, error: authError } = await sb.auth.signUp({ email, password });
+  if (authError) {
+    document.getElementById('signup-btn').disabled = false;
+    return showMsg('signup-msg', authError.message, 'error');
+  }
+
+  // Create profile
+  const { error: profileError } = await sb.from('profiles').insert({
+    id: authData.user.id,
+    role: 'contractor',
+    full_name: name,
+    email,
+    phone,
+    company_name: company,
+    service_area: area,
+    services_offered: services
+  });
+
+  if (profileError) {
+    document.getElementById('signup-btn').disabled = false;
+    return showMsg('signup-msg', profileError.message, 'error');
+  }
+
+  localStorage.setItem('ft_contractor', JSON.stringify({ id: authData.user.id, name, company, area, services }));
+  showDashboard({ name, company, area, services, id: authData.user.id });
+}
+
+async function handleLogin() {
+  const email = document.getElementById('l-email').value.trim();
+  const password = document.getElementById('l-password').value;
+
+  if (!email || !password) return showMsg('login-msg', 'Email and password required.', 'error');
+
+  document.getElementById('login-btn').disabled = true;
+
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+  if (error) {
+    document.getElementById('login-btn').disabled = false;
+    return showMsg('login-msg', error.message, 'error');
+  }
+
+  // Fetch profile
+  const { data: profile } = await sb.from('profiles').select('*').eq('id', data.user.id).single();
+  if (profile) {
+    localStorage.setItem('ft_contractor', JSON.stringify({
+      id: profile.id, name: profile.full_name, company: profile.company_name,
+      area: profile.service_area, services: profile.services_offered
+    }));
+    showDashboard({ name: profile.full_name, company: profile.company_name, area: profile.service_area, id: profile.id });
+  }
+}
+
+function handleLogout() {
+  sb.auth.signOut();
+  localStorage.removeItem('ft_contractor');
+  document.getElementById('auth-section').classList.remove('hidden');
+  document.getElementById('dashboard-section').classList.add('hidden');
+}
+
+async function showDashboard(user) {
+  document.getElementById('auth-section').classList.add('hidden');
+  document.getElementById('dashboard-section').classList.remove('hidden');
+  document.getElementById('d-name').textContent = user.name;
+  document.getElementById('d-company').textContent = user.company || 'Independent';
+  document.getElementById('d-area').textContent = user.area || 'No area set';
+
+  // Load bids
+  const { data: bids } = await sb.from('bids').select('*, jobs(title, service_type, location, status)').eq('contractor_id', user.id).order('created_at', { ascending: false });
+
+  const container = document.getElementById('my-bids');
+  if (!bids || bids.length === 0) {
+    container.innerHTML = '<p style="font-size:12px;color:var(--slate-light);">No bids yet. Browse the <a href="../jobs/" style="color:var(--green);">job board</a> to get started.</p>';
+    return;
+  }
+
+  container.innerHTML = bids.map(b => `
+    <div style="background:white;border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:8px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div style="font-size:13px;font-weight:500;">${b.jobs?.title || 'Job'}</div>
+          <div style="font-size:10px;color:var(--slate-light);">${b.jobs?.service_type || ''} · ${b.jobs?.location || ''}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-family:var(--mono);font-size:14px;font-weight:500;color:var(--green);">$${b.amount}</div>
+          <div style="font-size:10px;color:${b.status === 'accepted' ? 'var(--green)' : b.status === 'rejected' ? '#8a1a1a' : 'var(--slate-light)'};">${b.status}</div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// Check if already logged in
+const saved = localStorage.getItem('ft_contractor');
+if (saved) {
+  try {
+    const user = JSON.parse(saved);
+    showDashboard(user);
+  } catch (e) { localStorage.removeItem('ft_contractor'); }
+}
+</script>
+</body>
+</html>
