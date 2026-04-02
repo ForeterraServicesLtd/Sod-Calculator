@@ -144,6 +144,84 @@
     <span style="font-size:11px;color:var(--border);">·</span>
     <a href="request/" style="font-size:11px;color:var(--green);text-decoration:none;">Request Service</a>
   </div>
+
+  <div style="text-align:center;margin-top:40px;">
+    <a href="#about" style="color:var(--slate-light);font-size:11px;text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:4px;">
+      Learn more
+      <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:var(--slate-light);animation:bounce 2s infinite;"><path d="M7 10l5 5 5-5z"/></svg>
+    </a>
+  </div>
+</div>
+
+<style>
+  @keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(4px); } }
+  .about-section { background: white; border-top: 1px solid var(--border); padding: 60px 20px; }
+  .about-inner { max-width: 800px; margin: 0 auto; }
+  .about-title { font-size: 24px; font-weight: 600; text-align: center; margin-bottom: 8px; letter-spacing: -0.02em; }
+  .about-subtitle { font-size: 13px; color: var(--slate-light); text-align: center; margin-bottom: 40px; }
+  .about-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 40px; }
+  .about-card { text-align: center; }
+  .about-card-icon { width: 40px; height: 40px; background: var(--green-pale, #eaf4ee); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; }
+  .about-card-icon svg { width: 20px; height: 20px; fill: var(--green); }
+  .about-card h3 { font-size: 14px; font-weight: 500; margin-bottom: 6px; }
+  .about-card p { font-size: 12px; color: var(--slate-mid); line-height: 1.6; }
+  .about-text { font-size: 13px; color: var(--slate-mid); line-height: 1.8; text-align: center; max-width: 600px; margin: 0 auto 32px; }
+  .service-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 32px; }
+  .service-pill { font-size: 11px; padding: 6px 14px; border-radius: 20px; background: var(--surface); border: 1px solid var(--border); color: var(--slate-mid); }
+  .about-cta { text-align: center; }
+  .about-cta a { display: inline-block; padding: 12px 28px; background: var(--green); color: white; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 500; }
+  .about-cta a:hover { background: #14572f; }
+  @media (max-width: 640px) { .about-grid { grid-template-columns: 1fr; } }
+</style>
+
+<div class="about-section" id="about">
+  <div class="about-inner">
+    <h2 class="about-title">About Foreterra Services</h2>
+    <p class="about-subtitle">Trusted property services across the Peace Region</p>
+
+    <p class="about-text">
+      Foreterra Services is a Grande Prairie-based property services company built by people who know the land. We handle everything from sod installation and lot sweeping to herbicide application and full-season lawn maintenance. Whether it's a residential yard or a commercial property, we bring the right crew, the right equipment, and honest pricing every time.
+    </p>
+
+    <div class="about-grid">
+      <div class="about-card">
+        <div class="about-card-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>
+        </div>
+        <h3>Service Area</h3>
+        <p>Grande Prairie, Clairmont, Sexsmith, Beaverlodge, Wembley, and surrounding Peace Region communities.</p>
+      </div>
+      <div class="about-card">
+        <div class="about-card-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
+        </div>
+        <h3>What Sets Us Apart</h3>
+        <p>Transparent pricing calculators, licensed applicators, proper equipment for every job, and a crew that shows up on time.</p>
+      </div>
+      <div class="about-card">
+        <div class="about-card-icon">
+          <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+        </div>
+        <h3>For Everyone</h3>
+        <p>Homeowners can post jobs and get bids. Contractors can find work and price it right. One platform for the whole community.</p>
+      </div>
+    </div>
+
+    <h3 style="font-size:12px;text-transform:uppercase;letter-spacing:0.08em;color:var(--slate-light);text-align:center;margin-bottom:12px;">Our Services</h3>
+    <div class="service-list">
+      <span class="service-pill">Sod Installation</span>
+      <span class="service-pill">Lot Sweeping</span>
+      <span class="service-pill">Herbicide Application</span>
+      <span class="service-pill">Lawn Maintenance</span>
+      <span class="service-pill">Landscaping</span>
+      <span class="service-pill">Snow Removal</span>
+      <span class="service-pill">Property Cleanup</span>
+    </div>
+
+    <div class="about-cta">
+      <a href="tel:5872979275">Call Us — 587-297-9275</a>
+    </div>
+  </div>
 </div>
 
 <script>
