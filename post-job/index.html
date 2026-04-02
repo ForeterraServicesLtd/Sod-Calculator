@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Foreterra — Post a Job</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root { --green: #1a6b3c; --green-pale: #eaf4ee; --blue: #1a3a6b; --blue-pale: #eaeff8; --slate: #2c3040; --slate-mid: #4a5068; --slate-light: #8892a8; --border: #dde2ec; --surface: #f7f8fc; --font: 'DM Sans', sans-serif; --mono: 'DM Mono', monospace; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font); background: var(--surface); color: var(--slate); min-height: 100vh; display: flex; flex-direction: column; }
+  .header { background: var(--slate); padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid var(--green); }
+  .header-logo { display: flex; align-items: center; gap: 12px; }
+  .header-logo .mark { width: 26px; height: 26px; background: var(--green); border-radius: 5px; display: flex; align-items: center; justify-content: center; }
+  .header-logo .mark svg { width: 14px; height: 14px; fill: white; }
+  .header-logo h1 { font-size: 13px; font-weight: 500; color: white; }
+  .header-logo span { font-size: 10px; color: rgba(255,255,255,0.5); display: block; }
+  .header-nav { display: flex; gap: 6px; }
+  .nav-btn { display: flex; align-items: center; gap: 4px; color: rgba(255,255,255,0.5); text-decoration: none; font-size: 10px; font-family: var(--font); padding: 4px 8px; border: 1px solid rgba(255,255,255,0.15); border-radius: 5px; background: none; cursor: pointer; white-space: nowrap; }
+  .nav-btn:hover { color: rgba(255,255,255,0.8); border-color: rgba(255,255,255,0.3); }
+  .nav-btn.active { color: white; border-color: var(--green); background: rgba(26,107,60,0.2); }
+  .nav-btn svg { width: 12px; height: 12px; fill: currentColor; }
+
+  .content { flex: 1; max-width: 640px; margin: 0 auto; width: 100%; padding: 30px 20px; }
+  .page-title { font-size: 22px; font-weight: 600; margin-bottom: 6px; }
+  .page-sub { font-size: 13px; color: var(--slate-light); margin-bottom: 28px; line-height: 1.5; }
+  .step-indicator { display: flex; gap: 8px; margin-bottom: 24px; }
+  .step-dot { width: 32px; height: 4px; border-radius: 2px; background: var(--border); }
+  .step-dot.active { background: var(--green); }
+  .step-dot.done { background: var(--green); opacity: 0.5; }
+
+  .card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 28px; }
+  .form-group { margin-bottom: 16px; }
+  .form-label { font-size: 11px; font-weight: 500; color: var(--slate-mid); margin-bottom: 4px; display: block; }
+  .form-input { width: 100%; font-family: var(--mono); font-size: 12px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); color: var(--slate); outline: none; }
+  .form-input:focus { border-color: var(--green); background: white; }
+  select.form-input { font-family: var(--font); font-size: 12px; cursor: pointer; }
+  textarea.form-input { font-family: var(--font); min-height: 80px; resize: vertical; }
+  .form-note { font-size: 10px; color: var(--slate-light); margin-top: 4px; }
+
+  .service-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .service-option { display: flex; align-items: center; gap: 8px; padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 12px; color: var(--slate-mid); background: var(--surface); transition: all 0.15s; }
+  .service-option:hover { border-color: var(--green); }
+  .service-option.selected { background: var(--green-pale); border-color: var(--green); color: var(--green); font-weight: 500; }
+  .service-option input { display: none; }
+
+  .estimate-box { background: var(--green-pale); border: 1px solid var(--green); border-radius: 10px; padding: 16px 20px; margin-top: 16px; text-align: center; }
+  .estimate-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--green); margin-bottom: 4px; }
+  .estimate-val { font-family: var(--mono); font-size: 24px; font-weight: 500; color: var(--green); }
+  .estimate-note { font-size: 10px; color: var(--slate-light); margin-top: 4px; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .btn { width: 100%; padding: 12px; background: var(--green); color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 500; font-family: var(--font); cursor: pointer; margin-top: 16px; }
+  .btn:hover { background: #14572f; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-back { background: none; border: 1px solid var(--border); color: var(--slate-mid); }
+  .btn-back:hover { background: var(--surface); }
+  .btn-row { display: flex; gap: 8px; margin-top: 16px; }
+  .btn-row .btn { margin-top: 0; }
+  .hidden { display: none; }
+  .msg { font-size: 12px; margin-top: 12px; text-align: center; padding: 8px; border-radius: 6px; }
+  .msg.error { color: #8a1a1a; background: #fdeaea; }
+  .msg.success { color: var(--green); background: var(--green-pale); }
+
+  .success-card { text-align: center; padding: 40px 28px; }
+  .success-card svg { width: 56px; height: 56px; fill: var(--green); margin-bottom: 16px; }
+  .success-card h2 { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
+  .success-card p { font-size: 13px; color: var(--slate-light); margin-bottom: 20px; line-height: 1.5; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-logo">
+    <div class="mark">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-4H7l5-9v4h4l-5 9z"/></svg>
+    </div>
+    <div>
+      <h1>Foreterra Services</h1>
+      <span>Post a Job</span>
+    </div>
+  </div>
+  <div class="header-nav">
+    <a class="nav-btn" href="../">
+      <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      Home
+    </a>
+    <a class="nav-btn" href="../jobs/">Job Board</a>
+    <a class="nav-btn active" href="../post-job/">Post a Job</a>
+    <a class="nav-btn" href="../contractor/">Contractor Portal</a>
+  </div>
+</div>
+
+<div class="content">
+  <h1 class="page-title">Post a Job</h1>
+  <p class="page-sub">Tell us what you need done. Get an estimate and let contractors bid on your project.</p>
+
+  <div class="step-indicator">
+    <div class="step-dot active" id="dot-1"></div>
+    <div class="step-dot" id="dot-2"></div>
+    <div class="step-dot" id="dot-3"></div>
+  </div>
+
+  <!-- STEP 1: Service type -->
+  <div class="card" id="step-1">
+    <div class="form-group">
+      <label class="form-label">What service do you need?</label>
+      <div class="service-grid" id="service-grid">
+        <label class="service-option" onclick="selectService(this, 'Sod Installation')">
+          <input type="radio" name="service" value="Sod Installation">
+          Sod Installation
+        </label>
+        <label class="service-option" onclick="selectService(this, 'Lot Sweeping')">
+          <input type="radio" name="service" value="Lot Sweeping">
+          Lot Sweeping
+        </label>
+        <label class="service-option" onclick="selectService(this, 'Herbicide Application')">
+          <input type="radio" name="service" value="Herbicide Application">
+          Herbicide Application
+        </label>
+        <label class="service-option" onclick="selectService(this, 'Lawn Maintenance')">
+          <input type="radio" name="service" value="Lawn Maintenance">
+          Lawn Maintenance
+        </label>
+        <label class="service-option" onclick="selectService(this, 'Landscaping')">
+          <input type="radio" name="service" value="Landscaping">
+          Landscaping
+        </label>
+        <label class="service-option" onclick="selectService(this, 'Snow Removal')">
+          <input type="radio" name="service" value="Snow Removal">
+          Snow Removal
+        </label>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Approximate area (sq ft)</label>
+      <input class="form-input" type="number" id="j-area" value="" min="0" step="100" placeholder="e.g. 5000">
+      <div class="form-note">Don't know? That's okay — give your best guess or leave blank.</div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Location</label>
+      <input class="form-input" type="text" id="j-location" placeholder="e.g. Grande Prairie, AB">
+    </div>
+
+    <div class="estimate-box" id="estimate-box" style="display:none;">
+      <div class="estimate-label">Estimated range</div>
+      <div class="estimate-val" id="estimate-val">$0 – $0</div>
+      <div class="estimate-note">Based on typical pricing. Actual bids may vary.</div>
+    </div>
+
+    <button class="btn" onclick="goToStep(2)">Next — Job Details</button>
+  </div>
+
+  <!-- STEP 2: Details -->
+  <div class="card hidden" id="step-2">
+    <div class="form-group">
+      <label class="form-label">Job title</label>
+      <input class="form-input" type="text" id="j-title" placeholder="e.g. Front yard sod replacement">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Description</label>
+      <textarea class="form-input" id="j-desc" placeholder="Describe what you need done, any special requirements, access issues, timeline..."></textarea>
+    </div>
+    <div class="two-col">
+      <div class="form-group">
+        <label class="form-label">Budget low ($)</label>
+        <input class="form-input" type="number" id="j-budgetlow" placeholder="e.g. 500" min="0">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Budget high ($)</label>
+        <input class="form-input" type="number" id="j-budgethigh" placeholder="e.g. 1500" min="0">
+      </div>
+    </div>
+    <div class="form-note" style="margin-bottom:12px;">Budget is optional but helps contractors know your range.</div>
+
+    <div class="btn-row">
+      <button class="btn btn-back" onclick="goToStep(1)">Back</button>
+      <button class="btn" onclick="goToStep(3)">Next — Your Info</button>
+    </div>
+  </div>
+
+  <!-- STEP 3: Contact info -->
+  <div class="card hidden" id="step-3">
+    <div class="form-group">
+      <label class="form-label">Your name</label>
+      <input class="form-input" type="text" id="j-name" placeholder="Jane Smith">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Email</label>
+      <input class="form-input" type="email" id="j-email" placeholder="jane@example.com">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Phone (optional)</label>
+      <input class="form-input" type="tel" id="j-phone" placeholder="587-555-1234">
+    </div>
+    <div class="form-note" style="margin-bottom:8px;">Your contact info is shared with contractors who bid on your job.</div>
+
+    <div class="btn-row">
+      <button class="btn btn-back" onclick="goToStep(2)">Back</button>
+      <button class="btn" id="submit-btn" onclick="submitJob()">Post Job</button>
+    </div>
+    <div id="submit-msg"></div>
+  </div>
+
+  <!-- Success -->
+  <div class="card hidden" id="step-success">
+    <div class="success-card">
+      <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+      <h2>Job Posted!</h2>
+      <p>Your job is now live on the board. Contractors in your area will see it and can submit bids. We'll notify you when bids come in.</p>
+      <a class="btn" href="../jobs/" style="display:inline-block;text-decoration:none;max-width:200px;">View Job Board</a>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://prripeyvxhnqxdcrrmdw.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBycmlwZXl2eGhucXhkY3JybWR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwODQ0NTksImV4cCI6MjA5MDY2MDQ1OX0.LL7zKnUzMZPp8wynmXPRl21g8VEjpsk3y8C2spRCswQ';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let selectedService = '';
+
+// Rough price-per-sqft estimates by service
+const ESTIMATES = {
+  'Sod Installation': { low: 1.00, high: 2.50 },
+  'Lot Sweeping': { low: 0.03, high: 0.08 },
+  'Herbicide Application': { low: 0.02, high: 0.06 },
+  'Lawn Maintenance': { low: 0.01, high: 0.03 },
+  'Landscaping': { low: 0.50, high: 2.00 },
+  'Snow Removal': { low: 0.02, high: 0.06 },
+};
+
+function selectService(el, svc) {
+  selectedService = svc;
+  document.querySelectorAll('.service-option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  el.querySelector('input').checked = true;
+  updateEstimate();
+}
+
+function updateEstimate() {
+  const area = parseInt(document.getElementById('j-area').value) || 0;
+  const est = ESTIMATES[selectedService];
+  const box = document.getElementById('estimate-box');
+
+  if (!est || !area) { box.style.display = 'none'; return; }
+
+  const low = Math.round(area * est.low);
+  const high = Math.round(area * est.high);
+  document.getElementById('estimate-val').textContent = '$' + low.toLocaleString() + ' – $' + high.toLocaleString();
+  box.style.display = 'block';
+
+  // Auto-fill budget
+  document.getElementById('j-budgetlow').value = low;
+  document.getElementById('j-budgethigh').value = high;
+}
+
+document.getElementById('j-area').addEventListener('input', updateEstimate);
+
+function goToStep(n) {
+  // Validate
+  if (n === 2) {
+    if (!selectedService) return alert('Please select a service.');
+    if (!document.getElementById('j-location').value.trim()) return alert('Please enter a location.');
+    // Auto-generate title if empty
+    const title = document.getElementById('j-title');
+    if (!title.value.trim()) {
+      const area = document.getElementById('j-area').value;
+      title.value = selectedService + (area ? ' — ' + parseInt(area).toLocaleString() + ' sq ft' : '');
+    }
+  }
+  if (n === 3) {
+    if (!document.getElementById('j-title').value.trim()) return alert('Please enter a job title.');
+  }
+
+  [1, 2, 3].forEach(i => {
+    document.getElementById('step-' + i).classList.toggle('hidden', i !== n);
+    const dot = document.getElementById('dot-' + i);
+    dot.className = 'step-dot' + (i === n ? ' active' : i < n ? ' done' : '');
+  });
+}
+
+async function submitJob() {
+  const name = document.getElementById('j-name').value.trim();
+  const email = document.getElementById('j-email').value.trim();
+  if (!name || !email) {
+    document.getElementById('submit-msg').className = 'msg error';
+    document.getElementById('submit-msg').textContent = 'Name and email are required.';
+    return;
+  }
+
+  document.getElementById('submit-btn').disabled = true;
+
+  const job = {
+    service_type: selectedService,
+    title: document.getElementById('j-title').value.trim(),
+    description: document.getElementById('j-desc').value.trim(),
+    area_sqft: parseInt(document.getElementById('j-area').value) || null,
+    location: document.getElementById('j-location').value.trim(),
+    budget_low: parseInt(document.getElementById('j-budgetlow').value) || null,
+    budget_high: parseInt(document.getElementById('j-budgethigh').value) || null,
+    contact_name: name,
+    contact_email: email,
+    contact_phone: document.getElementById('j-phone').value.trim(),
+    status: 'open'
+  };
+
+  const { error } = await sb.from('jobs').insert(job);
+
+  if (error) {
+    document.getElementById('submit-btn').disabled = false;
+    document.getElementById('submit-msg').className = 'msg error';
+    document.getElementById('submit-msg').textContent = error.message;
+    return;
+  }
+
+  // Show success
+  document.getElementById('step-3').classList.add('hidden');
+  document.getElementById('step-success').classList.remove('hidden');
+  document.querySelectorAll('.step-dot').forEach(d => d.className = 'step-dot done');
+}
+</script>
+</body>
+</html>
