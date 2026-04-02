@@ -46,10 +46,13 @@
   .phone a { color: var(--green); text-decoration: none; }
   .phone a:hover { text-decoration: underline; }
   .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; max-width: 640px; width: 100%; }
-  [data-theme="dark"] { --slate: #e0e4ec; --slate-mid: #a0a8b8; --slate-light: #6a7488; --border: #2a2e3a; --surface: #14161c; }
+  [data-theme="dark"] { --slate: #e0e4ec; --slate-mid: #a0a8b8; --slate-light: #6a7488; --border: #2a2e3a; --surface: #14161c; --green-pale: #162e1f; }
   [data-theme="dark"] .card { background: #1a1d24; }
   [data-theme="dark"] .header { background: #0e1016; }
   [data-theme="dark"] .dropdown-menu { background: #0e1016; }
+  [data-theme="dark"] .about-section { background: #1a1d24; border-color: #2a2e3a; }
+  [data-theme="dark"] .about-card-icon { background: #162e1f; }
+  [data-theme="dark"] .service-pill { background: #14161c; border-color: #2a2e3a; }
   .card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 24px; text-decoration: none; color: var(--slate); transition: border-color 0.15s, box-shadow 0.15s; }
   .card:hover { border-color: var(--green); box-shadow: 0 4px 12px rgba(26,107,60,0.1); }
   .card-title { font-size: 16px; font-weight: 500; margin-bottom: 6px; }
