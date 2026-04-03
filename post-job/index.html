@@ -162,17 +162,11 @@
       <label class="form-label">Description</label>
       <textarea class="form-input" id="j-desc" placeholder="Describe what you need done, any special requirements, access issues, timeline..."></textarea>
     </div>
-    <div class="two-col">
-      <div class="form-group">
-        <label class="form-label">Budget low ($)</label>
-        <input class="form-input" type="number" id="j-budgetlow" placeholder="e.g. 500" min="0">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Budget high ($)</label>
-        <input class="form-input" type="number" id="j-budgethigh" placeholder="e.g. 1500" min="0">
-      </div>
+    <div class="form-group">
+      <label class="form-label">Budget ($)</label>
+      <input class="form-input" type="number" id="j-budget" placeholder="e.g. 1000" min="0">
+      <div class="form-note">Optional but helps contractors know your range.</div>
     </div>
-    <div class="form-note" style="margin-bottom:12px;">Budget is optional but helps contractors know your range.</div>
 
     <div class="btn-row">
       <button class="btn btn-back" onclick="goToStep(1)">Back</button>
@@ -250,9 +244,8 @@ function updateEstimate() {
   document.getElementById('estimate-val').textContent = '$' + low.toLocaleString() + ' – $' + high.toLocaleString();
   box.style.display = 'block';
 
-  // Auto-fill budget
-  document.getElementById('j-budgetlow').value = low;
-  document.getElementById('j-budgethigh').value = high;
+  // Auto-fill budget with midpoint
+  document.getElementById('j-budget').value = Math.round((low + high) / 2);
 }
 
 document.getElementById('j-area').addEventListener('input', updateEstimate);
@@ -297,8 +290,8 @@ async function submitJob() {
     description: document.getElementById('j-desc').value.trim(),
     area_sqft: parseInt(document.getElementById('j-area').value) || null,
     location: document.getElementById('j-location').value.trim(),
-    budget_low: parseInt(document.getElementById('j-budgetlow').value) || null,
-    budget_high: parseInt(document.getElementById('j-budgethigh').value) || null,
+    budget_low: parseInt(document.getElementById('j-budget').value) || null,
+    budget_high: null,
     contact_name: name,
     contact_email: email,
     contact_phone: document.getElementById('j-phone').value.trim(),
