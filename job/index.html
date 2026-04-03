@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Foreterra — Job Details</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root { --green: #1a6b3c; --green-pale: #eaf4ee; --blue: #1a3a6b; --blue-pale: #eaeff8; --amber: #7a4a0a; --amber-pale: #fdf0de; --slate: #2c3040; --slate-mid: #4a5068; --slate-light: #8892a8; --border: #dde2ec; --surface: #f7f8fc; --font: 'DM Sans', sans-serif; --mono: 'DM Mono', monospace; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font); background: var(--surface); color: var(--slate); min-height: 100vh; display: flex; flex-direction: column; }
+  .header { background: var(--slate); padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid var(--green); }
+  .header-logo { display: flex; align-items: center; gap: 12px; }
+  .header-logo .mark { width: 26px; height: 26px; background: var(--green); border-radius: 5px; display: flex; align-items: center; justify-content: center; }
+  .header-logo .mark svg { width: 14px; height: 14px; fill: white; }
+  .header-logo h1 { font-size: 13px; font-weight: 500; color: white; }
+  .header-logo span { font-size: 10px; color: rgba(255,255,255,0.5); display: block; }
+  .header-nav { display: flex; gap: 6px; }
+  .nav-btn { display: flex; align-items: center; gap: 4px; color: rgba(255,255,255,0.5); text-decoration: none; font-size: 10px; font-family: var(--font); padding: 4px 8px; border: 1px solid rgba(255,255,255,0.15); border-radius: 5px; background: none; cursor: pointer; white-space: nowrap; }
+  .nav-btn:hover { color: rgba(255,255,255,0.8); border-color: rgba(255,255,255,0.3); }
+  .nav-btn svg { width: 12px; height: 12px; fill: currentColor; }
+
+  .content { flex: 1; max-width: 700px; margin: 0 auto; width: 100%; padding: 30px 20px; }
+  .back-link { font-size: 11px; color: var(--green); text-decoration: none; display: inline-flex; align-items: center; gap: 4px; margin-bottom: 16px; }
+  .back-link:hover { text-decoration: underline; }
+  .back-link svg { width: 14px; height: 14px; fill: currentColor; }
+
+  .job-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 16px; }
+  .job-title { font-size: 20px; font-weight: 600; margin-bottom: 4px; }
+  .job-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+  .chip { font-size: 10px; padding: 3px 10px; border-radius: 12px; font-weight: 500; }
+  .chip-svc { background: var(--green-pale); color: var(--green); }
+  .chip-status { background: var(--blue-pale); color: var(--blue); }
+  .chip-budget { background: var(--amber-pale); color: var(--amber); }
+  .job-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .meta-item { }
+  .meta-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--slate-light); margin-bottom: 2px; }
+  .meta-val { font-size: 13px; font-weight: 500; }
+  .job-desc { font-size: 12px; color: var(--slate-mid); line-height: 1.7; padding: 12px 0; border-top: 1px solid var(--border); }
+  .job-contact { padding: 12px 0; border-top: 1px solid var(--border); }
+  .job-contact h3 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--slate-light); margin-bottom: 8px; }
+  .contact-row { font-size: 12px; color: var(--slate-mid); margin-bottom: 4px; }
+  .contact-row a { color: var(--green); text-decoration: none; }
+  .contact-row a:hover { text-decoration: underline; }
+
+  .section-title { font-size: 14px; font-weight: 500; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
+  .bid-count { font-size: 11px; color: var(--slate-light); font-weight: 400; }
+
+  .bid-card { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; margin-bottom: 8px; }
+  .bid-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
+  .bid-name { font-size: 13px; font-weight: 500; }
+  .bid-company { font-size: 10px; color: var(--slate-light); }
+  .bid-amount { font-family: var(--mono); font-size: 18px; font-weight: 500; color: var(--green); }
+  .bid-message { font-size: 12px; color: var(--slate-mid); line-height: 1.6; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); }
+  .bid-date { font-size: 10px; color: var(--slate-light); margin-top: 6px; }
+  .bid-actions { display: flex; gap: 6px; margin-top: 10px; }
+  .bid-btn { font-size: 11px; padding: 6px 14px; border-radius: 6px; border: none; cursor: pointer; font-family: var(--font); font-weight: 500; }
+  .bid-btn-accept { background: var(--green); color: white; }
+  .bid-btn-accept:hover { background: #14572f; }
+  .bid-btn-reject { background: none; border: 1px solid var(--border); color: var(--slate-mid); }
+  .bid-btn-reject:hover { background: var(--surface); }
+
+  .empty { text-align: center; padding: 32px; color: var(--slate-light); font-size: 13px; background: white; border: 1px solid var(--border); border-radius: 10px; }
+
+  .lookup-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 28px; text-align: center; }
+  .lookup-card h2 { font-size: 18px; font-weight: 600; margin-bottom: 6px; }
+  .lookup-card p { font-size: 12px; color: var(--slate-light); margin-bottom: 16px; }
+  .lookup-row { display: flex; gap: 8px; max-width: 400px; margin: 0 auto; }
+  .form-input { flex: 1; font-family: var(--mono); font-size: 12px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); color: var(--slate); outline: none; }
+  .form-input:focus { border-color: var(--green); background: white; }
+  .btn { padding: 8px 16px; background: var(--green); color: white; border: none; border-radius: 6px; font-size: 12px; font-weight: 500; font-family: var(--font); cursor: pointer; }
+  .btn:hover { background: #14572f; }
+  .msg { font-size: 12px; margin-top: 10px; color: #8a1a1a; }
+
+  .my-jobs { margin-top: 20px; }
+  .my-job-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: white; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; cursor: pointer; text-decoration: none; color: var(--slate); transition: border-color 0.15s; }
+  .my-job-item:hover { border-color: var(--green); }
+  .my-job-title { font-size: 13px; font-weight: 500; }
+  .my-job-meta { font-size: 10px; color: var(--slate-light); margin-top: 2px; }
+  .my-job-bids { font-family: var(--mono); font-size: 12px; color: var(--green); font-weight: 500; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-logo">
+    <div class="mark">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-4H7l5-9v4h4l-5 9z"/></svg>
+    </div>
+    <div>
+      <h1>Foreterra Services</h1>
+      <span>Job Details</span>
+    </div>
+  </div>
+  <div class="header-nav">
+    <a class="nav-btn" href="../">
+      <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      Home
+    </a>
+    <a class="nav-btn" href="../jobs/">Job Board</a>
+    <a class="nav-btn" href="../post-job/">Post a Job</a>
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- Lookup screen (no job ID in URL) -->
+  <div id="lookup-section">
+    <div class="lookup-card">
+      <h2>Find Your Jobs</h2>
+      <p>Enter the email you used when posting to see your jobs and bids.</p>
+      <div class="lookup-row">
+        <input class="form-input" type="email" id="lookup-email" placeholder="your@email.com">
+        <button class="btn" onclick="lookupJobs()">Find</button>
+      </div>
+      <div id="lookup-msg" class="msg"></div>
+    </div>
+    <div class="my-jobs" id="my-jobs"></div>
+  </div>
+
+  <!-- Job detail screen -->
+  <div id="job-section" style="display:none;">
+    <a class="back-link" href="#" onclick="history.back();return false;">
+      <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+      Back
+    </a>
+
+    <div class="job-card" id="job-detail">
+      <!-- Filled by JS -->
+    </div>
+
+    <div class="section-title">
+      Bids <span class="bid-count" id="bid-count"></span>
+    </div>
+    <div id="bids-list">
+      <div class="empty">Loading bids...</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const SUPABASE_URL = 'https://prripeyvxhnqxdcrrmdw.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBycmlwZXl2eGhucXhkY3JybWR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwODQ0NTksImV4cCI6MjA5MDY2MDQ1OX0.LL7zKnUzMZPp8wynmXPRl21g8VEjpsk3y8C2spRCswQ';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const params = new URLSearchParams(window.location.search);
+const jobId = params.get('id');
+
+if (jobId) {
+  document.getElementById('lookup-section').style.display = 'none';
+  document.getElementById('job-section').style.display = 'block';
+  loadJob(jobId);
+}
+
+async function lookupJobs() {
+  const email = document.getElementById('lookup-email').value.trim().toLowerCase();
+  if (!email) { document.getElementById('lookup-msg').textContent = 'Enter your email.'; return; }
+
+  const { data, error } = await sb.from('jobs').select('*').eq('contact_email', email).order('created_at', { ascending: false });
+
+  if (error || !data || data.length === 0) {
+    document.getElementById('lookup-msg').textContent = 'No jobs found for that email.';
+    document.getElementById('my-jobs').innerHTML = '';
+    return;
+  }
+
+  document.getElementById('lookup-msg').textContent = '';
+
+  // Get bid counts
+  const jobIds = data.map(j => j.id);
+  const { data: bids } = await sb.from('bids').select('job_id').in('job_id', jobIds);
+  const bidCounts = {};
+  (bids || []).forEach(b => { bidCounts[b.job_id] = (bidCounts[b.job_id] || 0) + 1; });
+
+  document.getElementById('my-jobs').innerHTML = data.map(j => {
+    const count = bidCounts[j.id] || 0;
+    const date = new Date(j.created_at).toLocaleDateString('en-CA', { month: 'short', day: 'numeric' });
+    return `
+      <a class="my-job-item" href="?id=${j.id}">
+        <div>
+          <div class="my-job-title">${j.title}</div>
+          <div class="my-job-meta">${j.service_type} · ${j.location} · ${date}</div>
+        </div>
+        <div class="my-job-bids">${count} bid${count !== 1 ? 's' : ''}</div>
+      </a>`;
+  }).join('');
+}
+
+async function loadJob(id) {
+  const { data: job, error } = await sb.from('jobs').select('*').eq('id', id).single();
+  if (error || !job) {
+    document.getElementById('job-detail').innerHTML = '<p style="color:var(--slate-light);">Job not found.</p>';
+    return;
+  }
+
+  const budget = job.budget_low ? '$' + job.budget_low.toLocaleString() : 'TBD';
+  const date = new Date(job.created_at).toLocaleDateString('en-CA', { month: 'long', day: 'numeric', year: 'numeric' });
+
+  document.getElementById('job-detail').innerHTML = `
+    <div class="job-title">${job.title}</div>
+    <div class="job-chips">
+      <span class="chip chip-svc">${job.service_type}</span>
+      <span class="chip chip-status">${job.status}</span>
+      ${job.budget_low ? `<span class="chip chip-budget">Budget: ${budget}</span>` : ''}
+    </div>
+    <div class="job-meta">
+      <div class="meta-item">
+        <div class="meta-label">Location</div>
+        <div class="meta-val">${job.location}</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Area</div>
+        <div class="meta-val">${job.area_sqft ? job.area_sqft.toLocaleString() + ' sq ft' : 'Not specified'}</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Posted</div>
+        <div class="meta-val">${date}</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Budget</div>
+        <div class="meta-val">${budget}</div>
+      </div>
+    </div>
+    ${job.description ? `<div class="job-desc">${job.description}</div>` : ''}
+    <div class="job-contact">
+      <h3>Contact</h3>
+      <div class="contact-row">${job.contact_name}</div>
+      <div class="contact-row"><a href="mailto:${job.contact_email}">${job.contact_email}</a></div>
+      ${job.contact_phone ? `<div class="contact-row"><a href="tel:${job.contact_phone}">${job.contact_phone}</a></div>` : ''}
+    </div>
+  `;
+
+  // Load bids
+  const { data: bids } = await sb.from('bids').select('*, profiles(full_name, company_name, phone, email)').eq('job_id', id).order('created_at', { ascending: false });
+
+  const count = bids ? bids.length : 0;
+  document.getElementById('bid-count').textContent = `(${count})`;
+
+  if (!bids || bids.length === 0) {
+    document.getElementById('bids-list').innerHTML = '<div class="empty">No bids yet. Contractors will see your job on the board.</div>';
+    return;
+  }
+
+  document.getElementById('bids-list').innerHTML = bids.map(b => {
+    const bidDate = new Date(b.created_at).toLocaleDateString('en-CA', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+    const name = b.profiles?.full_name || 'Contractor';
+    const company = b.profiles?.company_name || '';
+    const phone = b.profiles?.phone || '';
+    const email = b.profiles?.email || '';
+    const statusColor = b.status === 'accepted' ? 'var(--green)' : b.status === 'rejected' ? '#8a1a1a' : 'var(--slate-light)';
+
+    return `
+      <div class="bid-card">
+        <div class="bid-header">
+          <div>
+            <div class="bid-name">${name}</div>
+            ${company ? `<div class="bid-company">${company}</div>` : ''}
+            ${phone ? `<div class="bid-company"><a href="tel:${phone}" style="color:var(--green);text-decoration:none;">${phone}</a></div>` : ''}
+            ${email ? `<div class="bid-company"><a href="mailto:${email}" style="color:var(--green);text-decoration:none;">${email}</a></div>` : ''}
+          </div>
+          <div>
+            <div class="bid-amount">$${b.amount.toLocaleString()}</div>
+            <div style="font-size:10px;color:${statusColor};text-align:right;">${b.status}</div>
+          </div>
+        </div>
+        ${b.message ? `<div class="bid-message">${b.message}</div>` : ''}
+        <div class="bid-date">${bidDate}</div>
+        ${b.status === 'pending' ? `
+          <div class="bid-actions">
+            <button class="bid-btn bid-btn-accept" onclick="updateBid('${b.id}', 'accepted')">Accept</button>
+            <button class="bid-btn bid-btn-reject" onclick="updateBid('${b.id}', 'rejected')">Decline</button>
+          </div>
+        ` : ''}
+      </div>`;
+  }).join('');
+}
+
+async function updateBid(bidId, status) {
+  const { error } = await sb.from('bids').update({ status }).eq('id', bidId);
+  if (error) { alert('Error updating bid: ' + error.message); return; }
+  loadJob(jobId);
+}
+
+document.getElementById('lookup-email').addEventListener('keydown', e => {
+  if (e.key === 'Enter') lookupJobs();
+});
+</script>
+</body>
+</html>

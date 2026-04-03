@@ -202,8 +202,11 @@
     <div class="success-card">
       <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
       <h2>Job Posted!</h2>
-      <p>Your job is now live on the board. Contractors in your area will see it and can submit bids. We'll notify you when bids come in.</p>
-      <a class="btn" href="../jobs/" style="display:inline-block;text-decoration:none;max-width:200px;">View Job Board</a>
+      <p>Your job is now live on the board. Contractors in your area will see it and can submit bids.</p>
+      <p style="font-size:11px;color:var(--slate-light);margin-bottom:16px;">Bookmark the link below to check on bids anytime:</p>
+      <a class="btn" id="view-job-link" href="../job/" style="display:inline-block;text-decoration:none;max-width:260px;margin-bottom:10px;">View My Job & Bids</a>
+      <br>
+      <a href="../job/" style="font-size:11px;color:var(--green);text-decoration:none;">Or look up all your jobs by email</a>
     </div>
   </div>
 </div>
@@ -298,13 +301,18 @@ async function submitJob() {
     status: 'open'
   };
 
-  const { error } = await sb.from('jobs').insert(job);
+  const { data: inserted, error } = await sb.from('jobs').insert(job).select().single();
 
   if (error) {
     document.getElementById('submit-btn').disabled = false;
     document.getElementById('submit-msg').className = 'msg error';
     document.getElementById('submit-msg').textContent = error.message;
     return;
+  }
+
+  // Update success link with job ID
+  if (inserted && inserted.id) {
+    document.getElementById('view-job-link').href = '../job/?id=' + inserted.id;
   }
 
   // Show success
