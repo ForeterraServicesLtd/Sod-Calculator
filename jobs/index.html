@@ -154,9 +154,7 @@ function renderJobs() {
   }
 
   container.innerHTML = filtered.map(j => {
-    const budget = j.budget_low && j.budget_high
-      ? `$${j.budget_low.toLocaleString()} – $${j.budget_high.toLocaleString()}`
-      : j.budget_low ? `From $${j.budget_low.toLocaleString()}` : 'Budget TBD';
+    const budget = j.budget_low ? `$${j.budget_low.toLocaleString()}` : 'Budget TBD';
     const date = new Date(j.created_at).toLocaleDateString('en-CA', { month: 'short', day: 'numeric' });
     return `
       <div class="job-card" onclick="openBid('${j.id}', '${j.title.replace(/'/g, "\\'")}', '${j.service_type} · ${j.location}')">
