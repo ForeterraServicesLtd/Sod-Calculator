@@ -282,6 +282,19 @@ async function loadJob(id) {
 async function updateBid(bidId, status) {
   const { error } = await sb.from('bids').update({ status }).eq('id', bidId);
   if (error) { alert('Error updating bid: ' + error.message); return; }
+
+  // Notify the contractor
+  const { data: bid } = await sb.from('bids').select('*, profiles(email, full_name), jobs(title)').eq('id', bidId).single();
+  if (bid && bid.profiles?.email) {
+    const action = status === 'accepted' ? 'accepted' : 'declined';
+    await sb.from('notifications').insert({
+      recipient_email: bid.profiles.email,
+      job_id: bid.job_id,
+      type: status === 'accepted' ? 'bid_accepted' : 'bid_rejected',
+      message: `Your bid of <strong>$${bid.amount.toLocaleString()}</strong> on "<strong>${bid.jobs?.title || 'a job'}</strong>" has been <strong>${action}</strong>.`
+    });
+  }
+
   loadJob(jobId);
 }
 

@@ -225,6 +225,17 @@ async function submitBid() {
     return;
   }
 
+  // Notify the homeowner
+  const job = allJobs.find(j => j.id === currentJobId);
+  if (job && job.contact_email) {
+    await sb.from('notifications').insert({
+      recipient_email: job.contact_email,
+      job_id: currentJobId,
+      type: 'new_bid',
+      message: `<strong>${contractor.name || 'A contractor'}</strong>${contractor.company ? ' from ' + contractor.company : ''} placed a <strong>$${amount.toLocaleString()}</strong> bid on your job "<strong>${job.title}</strong>".`
+    });
+  }
+
   document.getElementById('bid-msg').className = 'msg success';
   document.getElementById('bid-msg').textContent = 'Bid submitted successfully!';
   setTimeout(closeBidModal, 1500);
