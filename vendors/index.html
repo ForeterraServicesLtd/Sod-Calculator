@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Foreterra — Vendor Prices</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root { --green: #1a6b3c; --green-pale: #eaf4ee; --blue: #1a3a6b; --blue-pale: #eaeff8; --amber: #7a4a0a; --amber-pale: #fdf0de; --slate: #2c3040; --slate-mid: #4a5068; --slate-light: #8892a8; --border: #dde2ec; --surface: #f7f8fc; --font: 'DM Sans', sans-serif; --mono: 'DM Mono', monospace; }
+  [data-theme="dark"] { --slate: #e0e4ec; --slate-mid: #a0a8b8; --slate-light: #6a7488; --border: #2a2e3a; --surface: #14161c; --green-pale: #162e1f; }
+  [data-theme="dark"] .header { background: #0e1016; }
+  [data-theme="dark"] .product-table th { background: #1a1d24; }
+  [data-theme="dark"] .product-table td { background: #1a1d24; }
+  [data-theme="dark"] .product-table tr:nth-child(even) td { background: #14161c; }
+  [data-theme="dark"] .vendor-card { background: #1a1d24; }
+  [data-theme="dark"] .search-input { background: #1a1d24; color: var(--slate); }
+  [data-theme="dark"] .dropdown-menu { background: #0e1016; }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font); background: var(--surface); color: var(--slate); min-height: 100vh; display: flex; flex-direction: column; }
+  .header { background: var(--slate); padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid var(--green); }
+  .header-logo { display: flex; align-items: center; gap: 12px; }
+  .header-logo .mark { width: 26px; height: 26px; background: var(--green); border-radius: 5px; display: flex; align-items: center; justify-content: center; }
+  .header-logo .mark svg { width: 14px; height: 14px; fill: white; }
+  .header-logo h1 { font-size: 13px; font-weight: 500; color: white; }
+  .header-logo span { font-size: 10px; color: rgba(255,255,255,0.5); display: block; }
+  .header-nav { display: flex; gap: 6px; }
+  .nav-btn { display: flex; align-items: center; gap: 4px; color: rgba(255,255,255,0.5); text-decoration: none; font-size: 10px; font-family: var(--font); padding: 4px 8px; border: 1px solid rgba(255,255,255,0.15); border-radius: 5px; background: none; cursor: pointer; white-space: nowrap; }
+  .nav-btn:hover { color: rgba(255,255,255,0.8); border-color: rgba(255,255,255,0.3); }
+  .nav-btn.active { color: white; border-color: var(--green); background: rgba(26,107,60,0.2); }
+  .nav-btn svg { width: 12px; height: 12px; fill: currentColor; }
+  .dropdown { position: relative; }
+  .dropdown-menu { display: none; position: absolute; top: 100%; right: 0; margin-top: 6px; background: var(--slate); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; min-width: 200px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.3); z-index: 100; }
+  .dropdown.open .dropdown-menu { display: block; }
+  .dropdown-menu a { display: flex; align-items: center; gap: 8px; padding: 10px 14px; color: rgba(255,255,255,0.6); text-decoration: none; font-size: 11px; font-family: var(--font); transition: all 0.15s; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .dropdown-menu a:last-child { border-bottom: none; }
+  .dropdown-menu a:hover { color: white; background: rgba(255,255,255,0.06); }
+
+  .content { flex: 1; max-width: 1000px; margin: 0 auto; width: 100%; padding: 24px 20px; }
+  .page-title { font-size: 22px; font-weight: 600; margin-bottom: 4px; }
+  .page-sub { font-size: 13px; color: var(--slate-light); margin-bottom: 20px; }
+
+  .toolbar { display: flex; gap: 8px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+  .search-input { flex: 1; min-width: 200px; font-family: var(--font); font-size: 12px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; background: white; color: var(--slate); outline: none; }
+  .search-input:focus { border-color: var(--green); }
+  .filter-btn { font-size: 10px; padding: 5px 10px; border: 1px solid var(--border); border-radius: 14px; background: white; color: var(--slate-mid); cursor: pointer; font-family: var(--font); white-space: nowrap; }
+  .filter-btn.active { background: var(--green); color: white; border-color: var(--green); }
+  .filter-btn:hover { border-color: var(--green); }
+  .refresh-btn { font-size: 10px; padding: 5px 12px; border: 1px solid var(--green); border-radius: 6px; background: var(--green-pale); color: var(--green); cursor: pointer; font-family: var(--font); font-weight: 500; }
+  .refresh-btn:hover { background: var(--green); color: white; }
+
+  .vendor-card { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 14px 18px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
+  .vendor-name { font-size: 14px; font-weight: 500; }
+  .vendor-meta { font-size: 10px; color: var(--slate-light); margin-top: 2px; }
+  .vendor-badge { font-family: var(--mono); font-size: 12px; color: var(--green); font-weight: 500; }
+
+  .product-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .product-table th { text-align: left; font-size: 9px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--slate-light); padding: 8px 12px; background: var(--surface); border-bottom: 1px solid var(--border); font-weight: 500; position: sticky; top: 0; }
+  .product-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); background: white; vertical-align: middle; }
+  .product-table tr:nth-child(even) td { background: var(--surface); }
+  .product-table tr:hover td { background: var(--green-pale); }
+  .price-cell { font-family: var(--mono); font-weight: 500; color: var(--green); white-space: nowrap; }
+  .price-cell.no-price { color: var(--slate-light); font-weight: 400; }
+  .stock-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 4px; }
+  .stock-dot.in { background: var(--green); }
+  .stock-dot.out { background: #c94040; }
+  .cat-chip { font-size: 9px; padding: 2px 8px; border-radius: 10px; background: var(--blue-pale); color: var(--blue); font-weight: 500; white-space: nowrap; }
+  .product-link { color: var(--green); text-decoration: none; font-weight: 500; }
+  .product-link:hover { text-decoration: underline; }
+
+  .loading { text-align: center; padding: 40px; color: var(--slate-light); font-size: 13px; }
+  .spinner { width: 24px; height: 24px; border: 2px solid var(--border); border-top-color: var(--green); border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto 12px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .empty { text-align: center; padding: 32px; color: var(--slate-light); font-size: 12px; }
+  .updated-note { font-size: 10px; color: var(--slate-light); text-align: right; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-logo">
+    <div class="mark">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-4H7l5-9v4h4l-5 9z"/></svg>
+    </div>
+    <div>
+      <h1>Foreterra Services</h1>
+      <span>Vendor Prices</span>
+    </div>
+  </div>
+  <div class="header-nav">
+    <a class="nav-btn" href="../">
+      <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      Home
+    </a>
+    <a class="nav-btn" href="../contractor/">Contractor Portal</a>
+    <a class="nav-btn active" href="../vendors/">Vendor Prices</a>
+    <div class="dropdown" id="settings-dropdown">
+      <button class="nav-btn" onclick="this.parentElement.classList.toggle('open')" title="Settings">
+        <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.49.49 0 00-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 00-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6A3.6 3.6 0 1112 8.4a3.6 3.6 0 010 7.2z"/></svg>
+      </button>
+      <div class="dropdown-menu">
+        <a href="#" onclick="setTheme('light');return false;">Light Mode</a>
+        <a href="#" onclick="setTheme('dark');return false;">Dark Mode</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="content">
+  <h1 class="page-title">Vendor Prices</h1>
+  <p class="page-sub">Live pricing pulled from vendor websites. Use these to estimate material costs in your quotes.</p>
+
+  <div class="vendor-card">
+    <div>
+      <div class="vendor-name">Kakwa Stone</div>
+      <div class="vendor-meta">kakwastone.com · Grande Prairie, AB · WooCommerce API</div>
+    </div>
+    <div class="vendor-badge" id="product-count">Loading...</div>
+  </div>
+
+  <div class="toolbar">
+    <input class="search-input" type="text" id="search" placeholder="Search products..." oninput="renderProducts()">
+    <div id="category-filters"></div>
+    <button class="refresh-btn" onclick="loadPrices()">Refresh</button>
+  </div>
+
+  <div class="updated-note" id="updated-note"></div>
+
+  <div id="table-container">
+    <div class="loading">
+      <div class="spinner"></div>
+      Loading prices from Kakwa Stone...
+    </div>
+  </div>
+</div>
+
+<script>
+let allProducts = [];
+let categories = [];
+let activeCategory = 'all';
+
+async function loadPrices() {
+  document.getElementById('table-container').innerHTML = '<div class="loading"><div class="spinner"></div>Loading prices from Kakwa Stone...</div>';
+
+  try {
+    const res = await fetch('/api/vendor-prices?vendor=kakwastone');
+    const data = await res.json();
+
+    if (data.error) {
+      document.getElementById('table-container').innerHTML = '<div class="empty">Error: ' + data.error + '</div>';
+      return;
+    }
+
+    allProducts = data.products;
+    document.getElementById('product-count').textContent = data.count + ' products';
+    document.getElementById('updated-note').textContent = 'Last updated: ' + new Date(data.updated).toLocaleString('en-CA');
+
+    // Extract categories
+    categories = [...new Set(allProducts.map(p => p.category))].sort();
+    renderCategoryFilters();
+    renderProducts();
+  } catch (err) {
+    document.getElementById('table-container').innerHTML = '<div class="empty">Failed to load. Check connection and try again.</div>';
+  }
+}
+
+function renderCategoryFilters() {
+  const container = document.getElementById('category-filters');
+  container.innerHTML = '<button class="filter-btn active" onclick="setCategory(\'all\', this)">All</button>' +
+    categories.map(c => '<button class="filter-btn" onclick="setCategory(\'' + c.replace(/'/g, "\\'") + '\', this)">' + c + '</button>').join('');
+}
+
+function setCategory(cat, btn) {
+  activeCategory = cat;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderProducts();
+}
+
+function renderProducts() {
+  const query = document.getElementById('search').value.toLowerCase();
+  let filtered = allProducts;
+
+  if (activeCategory !== 'all') {
+    filtered = filtered.filter(p => p.category === activeCategory);
+  }
+  if (query) {
+    filtered = filtered.filter(p => p.name.toLowerCase().includes(query) || p.category.toLowerCase().includes(query) || p.description.toLowerCase().includes(query));
+  }
+
+  if (filtered.length === 0) {
+    document.getElementById('table-container').innerHTML = '<div class="empty">No products match your search.</div>';
+    return;
+  }
+
+  let html = '<table class="product-table"><thead><tr>';
+  html += '<th>Product</th><th>Category</th><th>Price (CAD)</th><th>Stock</th>';
+  html += '</tr></thead><tbody>';
+
+  filtered.forEach(p => {
+    const price = p.price ? '$' + parseFloat(p.price).toFixed(2) : '—';
+    const priceClass = p.price ? 'price-cell' : 'price-cell no-price';
+    const stockDot = p.in_stock ? '<span class="stock-dot in"></span>In stock' : '<span class="stock-dot out"></span>Out';
+    const link = p.permalink ? `<a class="product-link" href="${p.permalink}" target="_blank">${p.name}</a>` : p.name;
+
+    html += `<tr>
+      <td>${link}${p.description ? '<br><span style="font-size:10px;color:var(--slate-light);">' + p.description.substring(0, 80) + '</span>' : ''}</td>
+      <td><span class="cat-chip">${p.category}</span></td>
+      <td class="${priceClass}">${price}${p.sale_price && p.sale_price !== p.price ? '<br><span style="font-size:10px;color:var(--slate-light);text-decoration:line-through;">$' + parseFloat(p.regular_price).toFixed(2) + '</span>' : ''}</td>
+      <td style="font-size:11px;">${stockDot}</td>
+    </tr>`;
+  });
+
+  html += '</tbody></table>';
+  document.getElementById('table-container').innerHTML = html;
+}
+
+// Theme
+document.addEventListener('click', e => {
+  document.querySelectorAll('.dropdown').forEach(dd => {
+    if (!dd.contains(e.target)) dd.classList.remove('open');
+  });
+});
+function setTheme(t) {
+  if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+  else document.documentElement.removeAttribute('data-theme');
+  localStorage.setItem('theme', t);
+  document.getElementById('settings-dropdown').classList.remove('open');
+}
+if (localStorage.getItem('theme') === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+
+loadPrices();
+</script>
+</body>
+</html>
