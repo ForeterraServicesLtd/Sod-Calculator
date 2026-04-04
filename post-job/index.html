@@ -129,6 +129,10 @@
           <input type="radio" name="service" value="Snow Removal">
           Snow Removal
         </label>
+        <label class="service-option" onclick="selectService(this, 'Stump Grinding')">
+          <input type="radio" name="service" value="Stump Grinding">
+          Stump Grinding
+        </label>
       </div>
     </div>
 
@@ -225,6 +229,7 @@ const ESTIMATES = {
   'Herbicide Application': { low: 0.08, high: 0.10 },
   'Lawn Maintenance': { low: 0.04, high: 0.05 },
   'Snow Removal': { low: 0.08, high: 0.12 },
+  'Stump Grinding': { low: 3.00, high: 6.00 },
 };
 
 function selectService(el, svc) {
