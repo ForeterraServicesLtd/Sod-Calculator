@@ -94,40 +94,70 @@ module.exports = async (req, res) => {
     return res.status(400).json({ error: 'Unknown vendor. Available: ' + Object.keys(VENDORS).join(', ') });
   }
 
+  // Supabase for caching
+  const { createClient } = require('@supabase/supabase-js');
+  const sb = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
+
   try {
     let allProducts = [];
+    let fetchSuccess = false;
 
-    if (config.type === 'shopify') {
-      // Shopify products.json - paginate
-      let page = 1;
-      let hasMore = true;
-      while (hasMore && page <= 5) {
-        const url = config.url + (config.url.includes('?') ? '&' : '?') + 'page=' + page;
-        const response = await fetch(url);
-        if (!response.ok) return res.status(502).json({ error: 'Vendor API returned ' + response.status });
-        const data = await response.json();
-        const products = data.products || [];
-        if (products.length === 0) { hasMore = false; } else {
-          allProducts = allProducts.concat(products.map(config.transform));
-          page++;
-          if (products.length < 250) hasMore = false;
+    // Try live fetch
+    try {
+      if (config.type === 'shopify') {
+        let page = 1;
+        let hasMore = true;
+        while (hasMore && page <= 5) {
+          const url = config.url + (config.url.includes('?') ? '&' : '?') + 'page=' + page;
+          const response = await fetch(url);
+          if (!response.ok) throw new Error('Vendor API returned ' + response.status);
+          const data = await response.json();
+          const products = data.products || [];
+          if (products.length === 0) { hasMore = false; } else {
+            allProducts = allProducts.concat(products.map(config.transform));
+            page++;
+            if (products.length < 250) hasMore = false;
+          }
+        }
+      } else {
+        let page = 1;
+        let hasMore = true;
+        while (hasMore && page <= 5) {
+          const url = config.url + (config.url.includes('?') ? '&' : '?') + 'page=' + page;
+          const response = await fetch(url);
+          if (!response.ok) throw new Error('Vendor API returned ' + response.status);
+          const data = await response.json();
+          if (!Array.isArray(data) || data.length === 0) { hasMore = false; } else {
+            allProducts = allProducts.concat(data.map(config.transform));
+            page++;
+            if (data.length < 100) hasMore = false;
+          }
         }
       }
-    } else {
-      // WooCommerce
-      let page = 1;
-      let hasMore = true;
-      while (hasMore && page <= 5) {
-        const url = config.url + (config.url.includes('?') ? '&' : '?') + 'page=' + page;
-        const response = await fetch(url);
-        if (!response.ok) return res.status(502).json({ error: 'Vendor API returned ' + response.status });
-        const data = await response.json();
-        if (!Array.isArray(data) || data.length === 0) { hasMore = false; } else {
-          allProducts = allProducts.concat(data.map(config.transform));
-          page++;
-          if (data.length < 100) hasMore = false;
-        }
+      fetchSuccess = true;
+
+      // Save to cache
+      const { data: existing } = await sb.from('vendor_cache').select('id').eq('vendor', vendor).single();
+      if (existing) {
+        await sb.from('vendor_cache').update({ products: allProducts, count: allProducts.length, fetched_at: new Date().toISOString() }).eq('vendor', vendor);
+      } else {
+        await sb.from('vendor_cache').insert({ vendor, products: allProducts, count: allProducts.length });
       }
+    } catch (fetchErr) {
+      // Live fetch failed — try cache
+      const { data: cached } = await sb.from('vendor_cache').select('*').eq('vendor', vendor).single();
+      if (cached) {
+        res.setHeader('Cache-Control', 's-maxage=60');
+        return res.status(200).json({
+          vendor: config.name,
+          updated: cached.fetched_at,
+          count: cached.count,
+          products: cached.products,
+          cached: true,
+          cache_note: 'Live fetch failed. Showing cached prices from ' + new Date(cached.fetched_at).toLocaleString('en-CA')
+        });
+      }
+      return res.status(502).json({ error: 'Vendor API unavailable and no cached data: ' + fetchErr.message });
     }
 
     res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate=7200');
@@ -135,7 +165,8 @@ module.exports = async (req, res) => {
       vendor: config.name,
       updated: new Date().toISOString(),
       count: allProducts.length,
-      products: allProducts
+      products: allProducts,
+      cached: false
     });
   } catch (err) {
     res.status(500).json({ error: err.message });

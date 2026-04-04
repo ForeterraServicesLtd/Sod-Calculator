@@ -181,7 +181,14 @@ async function loadPrices() {
 
     allProducts = data.products;
     document.getElementById('product-count').textContent = data.count + ' products';
-    document.getElementById('updated-note').textContent = 'Last updated: ' + new Date(data.updated).toLocaleString('en-CA');
+    const cacheTag = data.cached ? ' (cached)' : ' (live)';
+    document.getElementById('updated-note').textContent = 'Last updated: ' + new Date(data.updated).toLocaleString('en-CA') + cacheTag;
+    if (data.cache_note) {
+      document.getElementById('updated-note').textContent += ' — ' + data.cache_note;
+      document.getElementById('updated-note').style.color = '#c97c1a';
+    } else {
+      document.getElementById('updated-note').style.color = '';
+    }
 
     // Extract categories
     categories = [...new Set(allProducts.map(p => p.category))].sort();
