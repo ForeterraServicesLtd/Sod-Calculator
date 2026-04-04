@@ -290,22 +290,25 @@ async function updateBid(bidId, status) {
     actionsEl.innerHTML = '<span style="font-size:10px;color:var(--slate-light);">Processing...</span>';
   }
 
+  // First get the bid details BEFORE updating (so we have contractor info)
+  const { data: bidData } = await sb.from('bids').select('*, profiles(email, full_name), jobs(title)').eq('id', bidId).single();
+
   const { error } = await sb.from('bids').update({ status }).eq('id', bidId);
   if (error) {
-    if (actionsEl) actionsEl.innerHTML = '<span style="font-size:10px;color:#8a1a1a;">Error: ' + error.message + '</span>';
+    if (actionsEl) actionsEl.innerHTML = '<span style="font-size:10px;color:#8a1a1a;">Error updating: ' + error.message + '. Run the update policy in Supabase.</span>';
     return;
   }
 
   // Notify the contractor
-  const { data: bid } = await sb.from('bids').select('*, profiles(email, full_name), jobs(title)').eq('id', bidId).single();
   let notified = false;
-  if (bid && bid.profiles?.email) {
+  const contractorEmail = bidData?.profiles?.email;
+  if (contractorEmail) {
     const action = status === 'accepted' ? 'accepted' : 'declined';
     const { error: notifError } = await sb.from('notifications').insert({
-      recipient_email: bid.profiles.email,
-      job_id: bid.job_id,
+      recipient_email: contractorEmail,
+      job_id: bidData.job_id,
       type: status === 'accepted' ? 'bid_accepted' : 'bid_rejected',
-      message: `Your bid of <strong>$${bid.amount.toLocaleString()}</strong> on "<strong>${bid.jobs?.title || 'a job'}</strong>" has been <strong>${action}</strong>.`
+      message: `Your bid of <strong>$${bidData.amount.toLocaleString()}</strong> on "<strong>${bidData.jobs?.title || 'a job'}</strong>" has been <strong>${action}</strong>.`
     });
     notified = !notifError;
   }
@@ -316,7 +319,7 @@ async function updateBid(bidId, status) {
     const bg = status === 'accepted' ? 'var(--green-pale)' : '#fdeaea';
     const label = status === 'accepted' ? 'Accepted' : 'Declined';
     actionsEl.innerHTML = `<div style="font-size:10px;padding:6px 10px;border-radius:5px;background:${bg};color:${color};">
-      Bid ${label} — ${notified ? 'contractor has been notified' : 'notification sent'}
+      Bid ${label} — ${notified ? 'contractor has been notified' : 'unable to notify contractor'}
     </div>`;
   }
 }
