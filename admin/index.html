@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Foreterra — Admin Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root { --green: #1a6b3c; --green-pale: #eaf4ee; --blue: #1a3a6b; --blue-pale: #eaeff8; --amber: #7a4a0a; --amber-pale: #fdf0de; --red: #8a1a1a; --red-pale: #fdeaea; --slate: #2c3040; --slate-mid: #4a5068; --slate-light: #8892a8; --border: #dde2ec; --surface: #f7f8fc; --font: 'DM Sans', sans-serif; --mono: 'DM Mono', monospace; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font); background: var(--surface); color: var(--slate); min-height: 100vh; display: flex; flex-direction: column; }
+  .header { background: var(--slate); padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid #c94040; }
+  .header-logo { display: flex; align-items: center; gap: 12px; }
+  .header-logo .mark { width: 26px; height: 26px; background: #c94040; border-radius: 5px; display: flex; align-items: center; justify-content: center; }
+  .header-logo .mark svg { width: 14px; height: 14px; fill: white; }
+  .header-logo h1 { font-size: 13px; font-weight: 500; color: white; }
+  .header-logo span { font-size: 10px; color: rgba(255,255,255,0.5); display: block; }
+  .header-nav { display: flex; gap: 6px; }
+  .nav-btn { display: flex; align-items: center; gap: 4px; color: rgba(255,255,255,0.5); text-decoration: none; font-size: 10px; font-family: var(--font); padding: 4px 8px; border: 1px solid rgba(255,255,255,0.15); border-radius: 5px; background: none; cursor: pointer; white-space: nowrap; }
+  .nav-btn:hover { color: rgba(255,255,255,0.8); }
+  .nav-btn svg { width: 12px; height: 12px; fill: currentColor; }
+
+  .content { flex: 1; max-width: 1000px; margin: 0 auto; width: 100%; padding: 24px 20px; }
+
+  /* Auth gate */
+  .gate { max-width: 400px; margin: 60px auto; text-align: center; }
+  .gate h2 { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+  .gate p { font-size: 12px; color: var(--slate-light); margin-bottom: 16px; }
+  .gate-input { width: 100%; font-family: var(--mono); font-size: 12px; padding: 10px 14px; border: 1px solid var(--border); border-radius: 6px; outline: none; text-align: center; margin-bottom: 10px; }
+  .gate-input:focus { border-color: #c94040; }
+  .gate-btn { width: 100%; padding: 10px; background: #c94040; color: white; border: none; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; font-family: var(--font); }
+  .gate-msg { font-size: 11px; color: #c94040; margin-top: 8px; }
+
+  /* Dashboard */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 24px; }
+  .stat { background: white; border: 1px solid var(--border); border-radius: 8px; padding: 14px; text-align: center; }
+  .stat-val { font-family: var(--mono); font-size: 24px; font-weight: 500; }
+  .stat-val.green { color: var(--green); }
+  .stat-val.blue { color: var(--blue); }
+  .stat-val.amber { color: var(--amber); }
+  .stat-val.red { color: #c94040; }
+  .stat-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--slate-light); margin-top: 3px; }
+
+  .section-title { font-size: 14px; font-weight: 500; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
+  .tab-row { display: flex; gap: 6px; margin-bottom: 16px; }
+  .tab { font-size: 11px; padding: 6px 14px; border: 1px solid var(--border); border-radius: 5px; background: white; color: var(--slate-mid); cursor: pointer; font-family: var(--font); }
+  .tab.active { background: var(--slate); color: white; border-color: var(--slate); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 24px; }
+  th { text-align: left; font-size: 9px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--slate-light); padding: 8px 10px; background: white; border-bottom: 2px solid var(--border); font-weight: 500; }
+  td { padding: 8px 10px; border-bottom: 1px solid var(--border); background: white; vertical-align: middle; }
+  tr:hover td { background: var(--surface); }
+  .role-badge { font-size: 9px; padding: 2px 8px; border-radius: 10px; font-weight: 500; }
+  .role-homeowner { background: var(--blue-pale); color: var(--blue); }
+  .role-contractor { background: var(--green-pale); color: var(--green); }
+  .status-badge { font-size: 9px; padding: 2px 8px; border-radius: 10px; font-weight: 500; }
+  .status-open { background: var(--green-pale); color: var(--green); }
+  .status-pending { background: var(--amber-pale); color: var(--amber); }
+  .status-accepted { background: var(--green-pale); color: var(--green); }
+  .status-rejected { background: var(--red-pale); color: var(--red); }
+  .del-btn { font-size: 9px; padding: 3px 8px; border: 1px solid #c94040; border-radius: 4px; background: none; color: #c94040; cursor: pointer; font-family: var(--font); }
+  .del-btn:hover { background: #c94040; color: white; }
+  .mono { font-family: var(--mono); }
+  .truncate { max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .refresh-btn { font-size: 10px; padding: 4px 10px; border: 1px solid var(--border); border-radius: 4px; background: white; cursor: pointer; font-family: var(--font); color: var(--slate-mid); }
+  .refresh-btn:hover { background: var(--surface); }
+
+  @media (max-width: 768px) {
+    .header { flex-direction: column; gap: 8px; padding: 8px 12px; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    table { font-size: 10px; }
+    th, td { padding: 6px 6px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-logo">
+    <div class="mark">
+      <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
+    </div>
+    <div>
+      <h1>Foreterra Services</h1>
+      <span>Admin Dashboard</span>
+    </div>
+  </div>
+  <div class="header-nav">
+    <a class="nav-btn" href="../">
+      <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      Home
+    </a>
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- Admin gate -->
+  <div id="gate-section">
+    <div class="gate">
+      <h2>Admin Access</h2>
+      <p>Enter the admin password to continue.</p>
+      <input class="gate-input" type="password" id="gate-pass" placeholder="Admin password" onkeydown="if(event.key==='Enter')checkGate()">
+      <button class="gate-btn" onclick="checkGate()">Enter</button>
+      <div class="gate-msg" id="gate-msg"></div>
+    </div>
+  </div>
+
+  <!-- Dashboard -->
+  <div id="admin-section" style="display:none;">
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-val green" id="s-profiles">—</div>
+        <div class="stat-label">Total Users</div>
+      </div>
+      <div class="stat">
+        <div class="stat-val blue" id="s-jobs">—</div>
+        <div class="stat-label">Jobs Posted</div>
+      </div>
+      <div class="stat">
+        <div class="stat-val amber" id="s-bids">—</div>
+        <div class="stat-label">Total Bids</div>
+      </div>
+      <div class="stat">
+        <div class="stat-val red" id="s-notifs">—</div>
+        <div class="stat-label">Notifications</div>
+      </div>
+    </div>
+
+    <div class="tab-row">
+      <button class="tab active" onclick="showSection('users', this)">Users</button>
+      <button class="tab" onclick="showSection('jobs', this)">Jobs</button>
+      <button class="tab" onclick="showSection('bids', this)">Bids</button>
+      <button class="tab" onclick="showSection('notifications', this)">Notifications</button>
+    </div>
+
+    <!-- Users -->
+    <div id="sec-users">
+      <div class="section-title">All Users <button class="refresh-btn" onclick="loadAll()">Refresh</button></div>
+      <table>
+        <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Role</th><th>Company</th><th>Area</th><th>Joined</th><th></th></tr></thead>
+        <tbody id="t-users"></tbody>
+      </table>
+    </div>
+
+    <!-- Jobs -->
+    <div id="sec-jobs" style="display:none;">
+      <div class="section-title">All Jobs <button class="refresh-btn" onclick="loadAll()">Refresh</button></div>
+      <table>
+        <thead><tr><th>Title</th><th>Service</th><th>Location</th><th>Area</th><th>Budget</th><th>Status</th><th>Contact</th><th>Posted</th><th></th></tr></thead>
+        <tbody id="t-jobs"></tbody>
+      </table>
+    </div>
+
+    <!-- Bids -->
+    <div id="sec-bids" style="display:none;">
+      <div class="section-title">All Bids <button class="refresh-btn" onclick="loadAll()">Refresh</button></div>
+      <table>
+        <thead><tr><th>Job</th><th>Contractor</th><th>Amount</th><th>Status</th><th>Message</th><th>Date</th><th></th></tr></thead>
+        <tbody id="t-bids"></tbody>
+      </table>
+    </div>
+
+    <!-- Notifications -->
+    <div id="sec-notifications" style="display:none;">
+      <div class="section-title">All Notifications <button class="refresh-btn" onclick="loadAll()">Refresh</button></div>
+      <table>
+        <thead><tr><th>Recipient</th><th>Type</th><th>Message</th><th>Read</th><th>Date</th><th></th></tr></thead>
+        <tbody id="t-notifs"></tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://prripeyvxhnqxdcrrmdw.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBycmlwZXl2eGhucXhkY3JybWR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwODQ0NTksImV4cCI6MjA5MDY2MDQ1OX0.LL7zKnUzMZPp8wynmXPRl21g8VEjpsk3y8C2spRCswQ';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const ADMIN_PASS = 'foreterra2026';
+
+function checkGate() {
+  if (document.getElementById('gate-pass').value === ADMIN_PASS) {
+    localStorage.setItem('ft_admin_dash', 'true');
+    showAdmin();
+  } else {
+    document.getElementById('gate-msg').textContent = 'Incorrect password.';
+  }
+}
+
+function showAdmin() {
+  document.getElementById('gate-section').style.display = 'none';
+  document.getElementById('admin-section').style.display = 'block';
+  loadAll();
+}
+
+function showSection(name, btn) {
+  ['users','jobs','bids','notifications'].forEach(s => {
+    document.getElementById('sec-' + s).style.display = s === name ? 'block' : 'none';
+  });
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function fmtDate(d) {
+  return d ? new Date(d).toLocaleDateString('en-CA', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
+}
+
+async function loadAll() {
+  // Profiles
+  const { data: profiles } = await sb.from('profiles').select('*').order('created_at', { ascending: false });
+  const p = profiles || [];
+  document.getElementById('s-profiles').textContent = p.length;
+  document.getElementById('t-users').innerHTML = p.map(u => `<tr>
+    <td><strong>${u.full_name}</strong></td>
+    <td class="mono">${u.email}</td>
+    <td>${u.phone || '—'}</td>
+    <td><span class="role-badge role-${u.role}">${u.role}</span></td>
+    <td>${u.company_name || '—'}</td>
+    <td>${u.service_area || '—'}</td>
+    <td>${fmtDate(u.created_at)}</td>
+    <td><button class="del-btn" onclick="deleteRow('profiles','${u.id}')">Delete</button></td>
+  </tr>`).join('') || '<tr><td colspan="8" style="text-align:center;color:var(--slate-light);">No users</td></tr>';
+
+  // Jobs
+  const { data: jobs } = await sb.from('jobs').select('*').order('created_at', { ascending: false });
+  const j = jobs || [];
+  document.getElementById('s-jobs').textContent = j.length;
+  document.getElementById('t-jobs').innerHTML = j.map(job => `<tr>
+    <td><strong class="truncate">${job.title}</strong></td>
+    <td>${job.service_type}</td>
+    <td>${job.location}</td>
+    <td>${job.area_sqft ? job.area_sqft.toLocaleString() : '—'}</td>
+    <td class="mono">${job.budget_low ? '$' + job.budget_low.toLocaleString() : '—'}</td>
+    <td><span class="status-badge status-${job.status}">${job.status}</span></td>
+    <td>${job.contact_name || '—'}<br><span style="font-size:9px;color:var(--slate-light);">${job.contact_email || ''}</span></td>
+    <td>${fmtDate(job.created_at)}</td>
+    <td><button class="del-btn" onclick="deleteRow('jobs','${job.id}')">Delete</button></td>
+  </tr>`).join('') || '<tr><td colspan="9" style="text-align:center;color:var(--slate-light);">No jobs</td></tr>';
+
+  // Bids
+  const { data: bids } = await sb.from('bids').select('*, jobs(title), profiles(full_name)').order('created_at', { ascending: false });
+  const b = bids || [];
+  document.getElementById('s-bids').textContent = b.length;
+  document.getElementById('t-bids').innerHTML = b.map(bid => `<tr>
+    <td>${bid.jobs?.title || '—'}</td>
+    <td>${bid.profiles?.full_name || '—'}</td>
+    <td class="mono" style="color:var(--green);font-weight:500;">$${bid.amount.toLocaleString()}</td>
+    <td><span class="status-badge status-${bid.status}">${bid.status}</span></td>
+    <td class="truncate">${bid.message || '—'}</td>
+    <td>${fmtDate(bid.created_at)}</td>
+    <td><button class="del-btn" onclick="deleteRow('bids','${bid.id}')">Delete</button></td>
+  </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--slate-light);">No bids</td></tr>';
+
+  // Notifications
+  const { data: notifs } = await sb.from('notifications').select('*').order('created_at', { ascending: false });
+  const n = notifs || [];
+  document.getElementById('s-notifs').textContent = n.length;
+  document.getElementById('t-notifs').innerHTML = n.map(nt => `<tr>
+    <td class="mono">${nt.recipient_email}</td>
+    <td><span class="status-badge status-${nt.type === 'new_bid' ? 'pending' : nt.type === 'bid_accepted' ? 'accepted' : 'rejected'}">${nt.type}</span></td>
+    <td class="truncate">${nt.message.replace(/<[^>]*>/g, '')}</td>
+    <td>${nt.read ? 'Yes' : 'No'}</td>
+    <td>${fmtDate(nt.created_at)}</td>
+    <td><button class="del-btn" onclick="deleteRow('notifications','${nt.id}')">Delete</button></td>
+  </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--slate-light);">No notifications</td></tr>';
+}
+
+async function deleteRow(table, id) {
+  if (!confirm('Are you sure you want to delete this?')) return;
+  const { error } = await sb.from(table).delete().eq('id', id);
+  if (error) alert('Error: ' + error.message);
+  else loadAll();
+}
+
+// Auto-login
+if (localStorage.getItem('ft_admin_dash') === 'true') showAdmin();
+</script>
+</body>
+</html>
