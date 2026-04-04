@@ -106,10 +106,14 @@
   <p style="font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:var(--slate-light);margin-bottom:12px;text-align:center;">I am a...</p>
 
   <div class="cards">
-    <a class="card" href="post-job/">
+    <div class="card" style="cursor:default;">
       <div class="card-title">Homeowner</div>
-      <div class="card-desc">Post a job, get an instant estimate, and let local contractors bid on your project.</div>
-    </a>
+      <div class="card-desc" style="margin-bottom:12px;">Need work done on your property? Post a new job or check on existing bids.</div>
+      <div style="display:flex;gap:8px;">
+        <a href="post-job/" style="flex:1;display:block;padding:8px;background:var(--green);color:white;border-radius:6px;text-decoration:none;font-size:11px;font-weight:500;text-align:center;">Post a Job</a>
+        <a href="job/" style="flex:1;display:block;padding:8px;background:var(--surface);color:var(--slate);border:1px solid var(--border);border-radius:6px;text-decoration:none;font-size:11px;font-weight:500;text-align:center;">My Jobs</a>
+      </div>
+    </div>
     <a class="card" href="contractor/">
       <div class="card-title">Contractor</div>
       <div class="card-desc">Browse jobs, submit bids, and access pricing calculators for sod, sweeping, herbicide, and more.</div>
