@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="../vendor-lookup.css">
 </head>
 <body>
 
@@ -222,7 +223,7 @@
           <input class="det-input" type="number" id="backfill-yds" value="1" min="0" step="0.5" placeholder="1">
         </div>
         <div>
-          <div class="det-label">$/yard</div>
+          <div class="det-label">$/yard <button class="vlookup-btn" onclick="openVendorLookup('backfill-rate','topsoil')">vendor</button></div>
           <input class="det-input" type="number" id="backfill-rate" value="45" min="0" step="5" placeholder="45">
         </div>
       </div>
@@ -237,7 +238,7 @@
     <div class="svc-details" id="det-seed">
       <div class="two-col">
         <div>
-          <div class="det-label">Seed material ($)</div>
+          <div class="det-label">Seed material ($) <button class="vlookup-btn" onclick="openVendorLookup('seed-mat','seed grass')">vendor</button></div>
           <input class="det-input" type="number" id="seed-mat" value="30" min="0" step="5" placeholder="30">
         </div>
         <div>
@@ -255,7 +256,7 @@
       <div class="sb-note" style="margin-bottom:6px;">Grade, topsoil, seed, fertilize, cleanup -- full finish.</div>
       <div class="two-col" style="margin-bottom:6px;">
         <div>
-          <div class="det-label">Materials ($)</div>
+          <div class="det-label">Materials ($) <button class="vlookup-btn" onclick="openVendorLookup('restore-mat','topsoil seed')">vendor</button></div>
           <input class="det-input" type="number" id="restore-mat" value="120" min="0" step="10" placeholder="120">
         </div>
         <div>
@@ -386,5 +387,18 @@ if (localStorage.getItem('theme') === 'dark') document.documentElement.setAttrib
   }
 })();
 </script>
+<script src="../vendor-lookup.js"></script>
+<div class="vl-overlay" id="vl-modal" onclick="if(event.target===this)closeVendorLookup()">
+  <div class="vl-box">
+    <div class="vl-header">
+      <h3>Vendor Price Lookup</h3>
+      <input class="vl-search" type="text" id="vl-search" placeholder="Search products..." oninput="filterVendorResults()">
+    </div>
+    <div class="vl-body" id="vl-results"></div>
+    <div class="vl-footer">
+      <button class="vl-close" onclick="closeVendorLookup()">Cancel</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>

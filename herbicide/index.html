@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="../vendor-lookup.css">
 </head>
 <body>
 
@@ -142,7 +143,7 @@
       </div>
       <div class="herb-fields">
         <div>
-          <div class="herb-field-label">Rate ($/sq ft)</div>
+          <div class="herb-field-label">Rate ($/sq ft) <button class="vlookup-btn" onclick="openVendorLookup('h-curtailm-rate','herbicide')">vendor</button></div>
           <input class="sb-input" type="number" id="h-curtailm-rate" value="0.02" min="0" step="0.001" placeholder="0.02">
         </div>
         <div>
@@ -164,7 +165,7 @@
       </div>
       <div class="herb-fields">
         <div>
-          <div class="herb-field-label">Rate ($/sq ft)</div>
+          <div class="herb-field-label">Rate ($/sq ft) <button class="vlookup-btn" onclick="openVendorLookup('h-roundup-rate','roundup')">vendor</button></div>
           <input class="sb-input" type="number" id="h-roundup-rate" value="0.005" min="0" step="0.001" placeholder="0.005">
         </div>
         <div>
@@ -186,7 +187,7 @@
       </div>
       <div class="herb-fields">
         <div>
-          <div class="herb-field-label">Rate ($/sq ft)</div>
+          <div class="herb-field-label">Rate ($/sq ft) <button class="vlookup-btn" onclick="openVendorLookup('h-par3-rate','herbicide')">vendor</button></div>
           <input class="sb-input" type="number" id="h-par3-rate" value="0.015" min="0" step="0.001" placeholder="0.015">
         </div>
         <div>
@@ -211,7 +212,7 @@
       </div>
       <div class="herb-fields">
         <div>
-          <div class="herb-field-label">Rate ($/sq ft)</div>
+          <div class="herb-field-label">Rate ($/sq ft) <button class="vlookup-btn" onclick="openVendorLookup('h-custom-rate','herbicide')">vendor</button></div>
           <input class="sb-input" type="number" id="h-custom-rate" value="0" min="0" step="0.001" placeholder="0">
         </div>
         <div>
@@ -355,5 +356,18 @@ if (localStorage.getItem('theme') === 'dark') document.documentElement.setAttrib
   }
 })();
 </script>
+<script src="../vendor-lookup.js"></script>
+<div class="vl-overlay" id="vl-modal" onclick="if(event.target===this)closeVendorLookup()">
+  <div class="vl-box">
+    <div class="vl-header">
+      <h3>Vendor Price Lookup</h3>
+      <input class="vl-search" type="text" id="vl-search" placeholder="Search products..." oninput="filterVendorResults()">
+    </div>
+    <div class="vl-body" id="vl-results"></div>
+    <div class="vl-footer">
+      <button class="vl-close" onclick="closeVendorLookup()">Cancel</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>

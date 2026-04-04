@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="../vendor-lookup.css">
 </head>
 <body>
 
@@ -186,7 +187,7 @@
         <span class="hrs-pill" id="fert-hrs-display">—</span>
       </div>
       <div style="margin-top:6px;">
-        <div class="det-label">Material cost ($)</div>
+        <div class="det-label">Material cost ($) <button class="vlookup-btn" onclick="openVendorLookup('fert-mat','fertilizer')">vendor</button></div>
         <input class="det-input" type="number" id="fert-mat" value="40" min="0" step="5" placeholder="40">
       </div>
     </div>
@@ -203,7 +204,7 @@
         <span class="hrs-pill" id="seed-hrs-display">—</span>
       </div>
       <div style="margin-top:6px;">
-        <div class="det-label">Seed material cost ($)</div>
+        <div class="det-label">Seed material cost ($) <button class="vlookup-btn" onclick="openVendorLookup('seed-mat','seed grass')">vendor</button></div>
         <input class="det-input" type="number" id="seed-mat" value="60" min="0" step="5" placeholder="60">
       </div>
     </div>
@@ -220,7 +221,7 @@
         <span class="hrs-pill" id="dethatch-hrs-display">—</span>
       </div>
       <div style="margin-top:6px;">
-        <div class="det-label">Equipment cost ($)</div>
+        <div class="det-label">Equipment cost ($) <button class="vlookup-btn" onclick="openVendorLookup('dethatch-equip','aerator dethatch')">vendor</button></div>
         <input class="det-input" type="number" id="dethatch-equip" value="100" min="0" step="10" placeholder="100">
       </div>
     </div>
@@ -372,5 +373,18 @@ if (localStorage.getItem('theme') === 'dark') document.documentElement.setAttrib
   }
 })();
 </script>
+<script src="../vendor-lookup.js"></script>
+<div class="vl-overlay" id="vl-modal" onclick="if(event.target===this)closeVendorLookup()">
+  <div class="vl-box">
+    <div class="vl-header">
+      <h3>Vendor Price Lookup</h3>
+      <input class="vl-search" type="text" id="vl-search" placeholder="Search products..." oninput="filterVendorResults()">
+    </div>
+    <div class="vl-body" id="vl-results"></div>
+    <div class="vl-footer">
+      <button class="vl-close" onclick="closeVendorLookup()">Cancel</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>

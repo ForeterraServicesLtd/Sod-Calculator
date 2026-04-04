@@ -106,7 +106,7 @@
   <div class="sb-group">
     <div class="sb-group-title">Materials</div>
     <div class="sb-field">
-      <div class="sb-label">Sod price ($/sq ft)</div>
+      <div class="sb-label">Sod price ($/sq ft) <button class="vlookup-btn" onclick="openVendorLookup('sb-sodp','sod')">vendor</button></div>
       <input class="sb-input" type="number" id="sb-sodp" value="0.45" min="0" step="0.01" placeholder="e.g. 0.45">
     </div>
     <div class="sb-field">
@@ -119,7 +119,7 @@
         <input class="sb-input" type="number" id="sb-top" value="6" min="0" step="1" placeholder="yds">
       </div>
       <div class="sb-field">
-        <div class="sb-label">Topsoil ($/yd)</div>
+        <div class="sb-label">Topsoil ($/yd) <button class="vlookup-btn" onclick="openVendorLookup('sb-topp','topsoil')">vendor</button></div>
         <input class="sb-input" type="number" id="sb-topp" value="32" min="0" step="1" placeholder="$/yd">
       </div>
     </div>
@@ -296,6 +296,121 @@ if (localStorage.getItem('theme') === 'dark') document.documentElement.setAttrib
     document.getElementById('paywall').style.display = 'flex';
   }
 })();
+
+// Vendor Lookup
+let vlTargetInput = null;
+let vlCache = {};
+
+function openVendorLookup(inputId, searchHint) {
+  vlTargetInput = inputId;
+  document.getElementById('vl-modal').classList.add('open');
+  document.getElementById('vl-search').value = searchHint || '';
+  document.getElementById('vl-results').innerHTML = '<div style="text-align:center;padding:20px;color:var(--slate-light);font-size:12px;">Loading vendors...</div>';
+  loadVendorProducts(searchHint);
+}
+
+function closeVendorLookup() {
+  document.getElementById('vl-modal').classList.remove('open');
+}
+
+async function loadVendorProducts(query) {
+  const vendors = ['kakwastone', 'klonservices', 'bulkdirect', 'raintech'];
+  let allItems = [];
+
+  for (const v of vendors) {
+    try {
+      let data = vlCache[v];
+      if (!data) {
+        const res = await fetch('/api/vendor-prices?vendor=' + v);
+        data = await res.json();
+        vlCache[v] = data;
+      }
+      if (data.products) {
+        data.products.forEach(p => {
+          if (p.price) allItems.push({ ...p, vendor: data.vendor });
+        });
+      }
+    } catch (e) {}
+  }
+
+  window._vlAllItems = allItems;
+  filterVendorResults();
+}
+
+function filterVendorResults() {
+  const query = document.getElementById('vl-search').value.toLowerCase();
+  const items = (window._vlAllItems || []).filter(p =>
+    p.name.toLowerCase().includes(query) ||
+    p.category.toLowerCase().includes(query) ||
+    p.vendor.toLowerCase().includes(query) ||
+    (p.description && p.description.toLowerCase().includes(query))
+  ).slice(0, 30);
+
+  const container = document.getElementById('vl-results');
+  if (items.length === 0) {
+    container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--slate-light);font-size:12px;">No matching products.</div>';
+    return;
+  }
+
+  container.innerHTML = items.map(p => {
+    const price = parseFloat(p.price).toFixed(2);
+    const variants = p.variants && p.variants.length > 1
+      ? '<div style="font-size:9px;color:var(--slate-light);margin-top:2px;">' + p.variants.map(v => v.name + ': $' + parseFloat(v.price).toFixed(2)).join(' · ') + '</div>'
+      : '';
+    return `<div class="vl-item" onclick="pickVendorPrice(${price})">
+      <div class="vl-item-left">
+        <div class="vl-item-name">${p.name}</div>
+        <div class="vl-item-meta">${p.vendor} · ${p.category}</div>
+        ${variants}
+      </div>
+      <div class="vl-item-price">$${price}</div>
+    </div>`;
+  }).join('');
+}
+
+function pickVendorPrice(price) {
+  if (vlTargetInput) {
+    document.getElementById(vlTargetInput).value = price;
+    document.getElementById(vlTargetInput).dispatchEvent(new Event('input'));
+  }
+  closeVendorLookup();
+}
 </script>
+
+<!-- Vendor Lookup Modal -->
+<style>
+  .vlookup-btn { font-size: 8px; padding: 1px 6px; border-radius: 3px; border: 1px solid var(--green); background: var(--green-pale, #eaf4ee); color: var(--green); cursor: pointer; font-family: var(--font); font-weight: 500; margin-left: 4px; vertical-align: middle; }
+  .vlookup-btn:hover { background: var(--green); color: white; }
+  .vl-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 300; align-items: center; justify-content: center; padding: 20px; }
+  .vl-overlay.open { display: flex; }
+  .vl-box { background: white; border-radius: 12px; max-width: 500px; width: 100%; max-height: 80vh; display: flex; flex-direction: column; overflow: hidden; }
+  [data-theme="dark"] .vl-box { background: #1a1d24; }
+  .vl-header { padding: 16px 20px 12px; border-bottom: 1px solid var(--border); }
+  .vl-header h3 { font-size: 14px; font-weight: 500; margin-bottom: 8px; }
+  .vl-search { width: 100%; font-family: var(--font); font-size: 12px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; outline: none; background: var(--surface); color: var(--slate); }
+  .vl-search:focus { border-color: var(--green); }
+  .vl-body { flex: 1; overflow-y: auto; padding: 8px; }
+  .vl-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; border-radius: 6px; cursor: pointer; transition: background 0.1s; }
+  .vl-item:hover { background: var(--green-pale, #eaf4ee); }
+  .vl-item-left { flex: 1; min-width: 0; }
+  .vl-item-name { font-size: 12px; font-weight: 500; }
+  .vl-item-meta { font-size: 10px; color: var(--slate-light); margin-top: 1px; }
+  .vl-item-price { font-family: var(--mono); font-size: 14px; font-weight: 500; color: var(--green); white-space: nowrap; margin-left: 12px; }
+  .vl-footer { padding: 10px 20px; border-top: 1px solid var(--border); text-align: right; }
+  .vl-close { font-size: 11px; padding: 6px 14px; border: 1px solid var(--border); border-radius: 6px; background: none; cursor: pointer; font-family: var(--font); color: var(--slate-mid); }
+  .vl-close:hover { background: var(--surface); }
+</style>
+<div class="vl-overlay" id="vl-modal" onclick="if(event.target===this)closeVendorLookup()">
+  <div class="vl-box">
+    <div class="vl-header">
+      <h3>Vendor Price Lookup</h3>
+      <input class="vl-search" type="text" id="vl-search" placeholder="Search products..." oninput="filterVendorResults()">
+    </div>
+    <div class="vl-body" id="vl-results"></div>
+    <div class="vl-footer">
+      <button class="vl-close" onclick="closeVendorLookup()">Cancel</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
