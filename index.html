@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
     --green: #1a6b3c;
@@ -46,6 +47,12 @@
   .phone a { color: var(--green); text-decoration: none; }
   .phone a:hover { text-decoration: underline; }
   .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; max-width: 640px; width: 100%; }
+  .ho-tab { font-size: 11px; padding: 5px 12px; border: 1px solid var(--border); border-radius: 5px; background: white; color: var(--slate-mid); cursor: pointer; font-family: var(--font); }
+  .ho-tab.active { background: var(--green); color: white; border-color: var(--green); }
+  .ho-input { width: 100%; font-family: var(--mono); font-size: 11px; padding: 7px 10px; border: 1px solid var(--border); border-radius: 5px; background: var(--surface); color: var(--slate); outline: none; margin-bottom: 6px; }
+  .ho-input:focus { border-color: var(--green); background: white; }
+  .ho-btn { width: 100%; padding: 8px; background: var(--green); color: white; border: none; border-radius: 5px; font-size: 11px; font-weight: 500; font-family: var(--font); cursor: pointer; }
+  .ho-btn:hover { background: #14572f; }
   [data-theme="dark"] { --slate: #e0e4ec; --slate-mid: #a0a8b8; --slate-light: #6a7488; --border: #2a2e3a; --surface: #14161c; --green-pale: #162e1f; }
   [data-theme="dark"] .card { background: #1a1d24; }
   [data-theme="dark"] .header { background: #0e1016; }
@@ -106,12 +113,27 @@
   <p style="font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:var(--slate-light);margin-bottom:12px;text-align:center;">I am a...</p>
 
   <div class="cards">
-    <div class="card" style="cursor:default;">
+    <div class="card" style="cursor:pointer;" onclick="toggleHomeowner()">
       <div class="card-title">Homeowner</div>
-      <div class="card-desc" style="margin-bottom:12px;">Need work done on your property? Post a new job or check on existing bids.</div>
-      <div style="display:flex;gap:8px;">
-        <a href="post-job/" style="flex:1;display:block;padding:8px;background:var(--green);color:white;border-radius:6px;text-decoration:none;font-size:11px;font-weight:500;text-align:center;">Post a Job</a>
-        <a href="homeowner/" style="flex:1;display:block;padding:8px;background:var(--surface);color:var(--slate);border:1px solid var(--border);border-radius:6px;text-decoration:none;font-size:11px;font-weight:500;text-align:center;">My Account</a>
+      <div class="card-desc">Post a job, get estimates, and let local contractors bid on your project.</div>
+      <div id="ho-expand" style="display:none;margin-top:12px;border-top:1px solid var(--border);padding-top:12px;">
+        <div style="display:flex;gap:6px;margin-bottom:10px;">
+          <button class="ho-tab active" id="ho-tab-login" onclick="event.stopPropagation();showHoTab('login')">Log In</button>
+          <button class="ho-tab" id="ho-tab-signup" onclick="event.stopPropagation();showHoTab('signup')">Create Account</button>
+        </div>
+        <div id="ho-login">
+          <input class="ho-input" type="email" id="ho-l-email" placeholder="Email" onclick="event.stopPropagation()">
+          <input class="ho-input" type="password" id="ho-l-pass" placeholder="Password" onclick="event.stopPropagation()" onkeydown="if(event.key==='Enter'){event.stopPropagation();hoLogin();}">
+          <button class="ho-btn" onclick="event.stopPropagation();hoLogin()">Log In</button>
+        </div>
+        <div id="ho-signup" style="display:none;">
+          <input class="ho-input" type="text" id="ho-s-name" placeholder="Full name" onclick="event.stopPropagation()">
+          <input class="ho-input" type="email" id="ho-s-email" placeholder="Email" onclick="event.stopPropagation()">
+          <input class="ho-input" type="tel" id="ho-s-phone" placeholder="Phone" onclick="event.stopPropagation()">
+          <input class="ho-input" type="password" id="ho-s-pass" placeholder="Password (min 6 chars)" onclick="event.stopPropagation()" onkeydown="if(event.key==='Enter'){event.stopPropagation();hoSignup();}">
+          <button class="ho-btn" onclick="event.stopPropagation();hoSignup()">Create Account</button>
+        </div>
+        <div id="ho-msg" style="font-size:11px;margin-top:8px;text-align:center;"></div>
       </div>
     </div>
     <a class="card" href="contractor/">
@@ -224,6 +246,79 @@ function setTheme(t) {
   document.getElementById('settings-dropdown').classList.remove('open');
 }
 if (localStorage.getItem('theme') === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+
+// Homeowner inline auth
+const hoSb = supabase.createClient('https://prripeyvxhnqxdcrrmdw.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBycmlwZXl2eGhucXhkY3JybWR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwODQ0NTksImV4cCI6MjA5MDY2MDQ1OX0.LL7zKnUzMZPp8wynmXPRl21g8VEjpsk3y8C2spRCswQ');
+
+let hoExpanded = false;
+function toggleHomeowner() {
+  // If already logged in, go straight to dashboard
+  if (localStorage.getItem('ft_homeowner')) {
+    window.location.href = 'homeowner/';
+    return;
+  }
+  hoExpanded = !hoExpanded;
+  document.getElementById('ho-expand').style.display = hoExpanded ? 'block' : 'none';
+}
+
+function showHoTab(tab) {
+  document.getElementById('ho-login').style.display = tab === 'login' ? 'block' : 'none';
+  document.getElementById('ho-signup').style.display = tab === 'signup' ? 'block' : 'none';
+  document.getElementById('ho-tab-login').classList.toggle('active', tab === 'login');
+  document.getElementById('ho-tab-signup').classList.toggle('active', tab === 'signup');
+}
+
+function hoMsg(text, type) {
+  const el = document.getElementById('ho-msg');
+  el.style.color = type === 'error' ? '#8a1a1a' : 'var(--green)';
+  el.textContent = text;
+}
+
+async function hoLogin() {
+  const email = document.getElementById('ho-l-email').value.trim();
+  const pass = document.getElementById('ho-l-pass').value;
+  if (!email || !pass) return hoMsg('Enter email and password.', 'error');
+
+  hoMsg('Logging in...', 'ok');
+  const { data, error } = await hoSb.auth.signInWithPassword({ email, password: pass });
+  if (error) return hoMsg(error.message, 'error');
+
+  const { data: profile } = await hoSb.from('profiles').select('*').eq('id', data.user.id).single();
+  localStorage.setItem('ft_homeowner', JSON.stringify({
+    id: data.user.id, name: profile?.full_name || email, email, phone: profile?.phone || ''
+  }));
+  window.location.href = 'homeowner/';
+}
+
+async function hoSignup() {
+  const name = document.getElementById('ho-s-name').value.trim();
+  const email = document.getElementById('ho-s-email').value.trim();
+  const phone = document.getElementById('ho-s-phone').value.trim();
+  const pass = document.getElementById('ho-s-pass').value;
+  if (!name || !email || !pass) return hoMsg('Name, email, and password required.', 'error');
+  if (pass.length < 6) return hoMsg('Password must be at least 6 characters.', 'error');
+
+  hoMsg('Creating account...', 'ok');
+  const { data, error } = await hoSb.auth.signUp({ email, password: pass });
+  if (error) return hoMsg(error.message, 'error');
+
+  await hoSb.from('profiles').insert({ id: data.user.id, role: 'homeowner', full_name: name, email, phone });
+  localStorage.setItem('ft_homeowner', JSON.stringify({ id: data.user.id, name, email, phone }));
+  window.location.href = 'homeowner/';
+}
+
+// If already logged in, update the homeowner card
+if (localStorage.getItem('ft_homeowner')) {
+  const ho = JSON.parse(localStorage.getItem('ft_homeowner'));
+  const card = document.querySelector('.cards .card:first-child');
+  card.innerHTML = `
+    <div class="card-title">Welcome back, ${ho.name}</div>
+    <div class="card-desc" style="margin-bottom:12px;">Continue to your dashboard to manage jobs and bids.</div>
+    <div style="display:flex;gap:8px;">
+      <a href="homeowner/" style="flex:1;display:block;padding:8px;background:var(--green);color:white;border-radius:6px;text-decoration:none;font-size:11px;font-weight:500;text-align:center;" onclick="event.stopPropagation();">My Dashboard</a>
+      <a href="post-job/" style="flex:1;display:block;padding:8px;background:var(--surface);color:var(--slate);border:1px solid var(--border);border-radius:6px;text-decoration:none;font-size:11px;font-weight:500;text-align:center;" onclick="event.stopPropagation();">Post a Job</a>
+    </div>`;
+}
 </script>
 </body>
 </html>
