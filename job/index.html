@@ -270,32 +270,55 @@ async function loadJob(id) {
         ${b.message ? `<div class="bid-message">${b.message}</div>` : ''}
         <div class="bid-date">${bidDate}</div>
         ${b.status === 'pending' ? `
-          <div class="bid-actions">
+          <div class="bid-actions" id="bid-actions-${b.id}">
             <button class="bid-btn bid-btn-accept" onclick="updateBid('${b.id}', 'accepted')">Accept</button>
             <button class="bid-btn bid-btn-reject" onclick="updateBid('${b.id}', 'rejected')">Decline</button>
           </div>
-        ` : ''}
+        ` : `
+          <div style="font-size:10px;margin-top:8px;padding:6px 10px;border-radius:5px;background:${b.status === 'accepted' ? 'var(--green-pale)' : '#fdeaea'};color:${b.status === 'accepted' ? 'var(--green)' : '#8a1a1a'};">
+            Bid ${b.status} — contractor has been notified
+          </div>
+        `}
       </div>`;
   }).join('');
 }
 
 async function updateBid(bidId, status) {
+  // Immediately hide buttons and show processing
+  const actionsEl = document.getElementById('bid-actions-' + bidId);
+  if (actionsEl) {
+    actionsEl.innerHTML = '<span style="font-size:10px;color:var(--slate-light);">Processing...</span>';
+  }
+
   const { error } = await sb.from('bids').update({ status }).eq('id', bidId);
-  if (error) { alert('Error updating bid: ' + error.message); return; }
+  if (error) {
+    if (actionsEl) actionsEl.innerHTML = '<span style="font-size:10px;color:#8a1a1a;">Error: ' + error.message + '</span>';
+    return;
+  }
 
   // Notify the contractor
   const { data: bid } = await sb.from('bids').select('*, profiles(email, full_name), jobs(title)').eq('id', bidId).single();
+  let notified = false;
   if (bid && bid.profiles?.email) {
     const action = status === 'accepted' ? 'accepted' : 'declined';
-    await sb.from('notifications').insert({
+    const { error: notifError } = await sb.from('notifications').insert({
       recipient_email: bid.profiles.email,
       job_id: bid.job_id,
       type: status === 'accepted' ? 'bid_accepted' : 'bid_rejected',
       message: `Your bid of <strong>$${bid.amount.toLocaleString()}</strong> on "<strong>${bid.jobs?.title || 'a job'}</strong>" has been <strong>${action}</strong>.`
     });
+    notified = !notifError;
   }
 
-  loadJob(jobId);
+  // Show confirmation
+  if (actionsEl) {
+    const color = status === 'accepted' ? 'var(--green)' : '#8a1a1a';
+    const bg = status === 'accepted' ? 'var(--green-pale)' : '#fdeaea';
+    const label = status === 'accepted' ? 'Accepted' : 'Declined';
+    actionsEl.innerHTML = `<div style="font-size:10px;padding:6px 10px;border-radius:5px;background:${bg};color:${color};">
+      Bid ${label} — ${notified ? 'contractor has been notified' : 'notification sent'}
+    </div>`;
+  }
 }
 
 document.getElementById('lookup-email').addEventListener('keydown', e => {
