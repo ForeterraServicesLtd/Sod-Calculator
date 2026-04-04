@@ -202,6 +202,15 @@
   .about-cta a { display: inline-block; padding: 12px 28px; background: var(--green); color: white; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 500; }
   .about-cta a:hover { background: #14572f; }
   @media (max-width: 640px) { .about-grid { grid-template-columns: 1fr; } }
+  @media (max-width: 768px) {
+    .header { flex-direction: column; gap: 8px; padding: 8px 12px; }
+    .header-nav { flex-wrap: wrap; justify-content: center; }
+    .cards { grid-template-columns: 1fr; }
+    .about-grid { grid-template-columns: 1fr; }
+    .content { padding: 24px 16px; }
+    .hero img { width: 140px; }
+    .hero h1 { font-size: 22px; }
+  }
 </style>
 
 <div class="about-section" id="about">

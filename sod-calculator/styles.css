@@ -122,3 +122,13 @@ input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; border-radius
 .equip-inputs.open { display: block; }
 .equip-rate-row { display: flex; align-items: center; gap: 8px; }
 .equip-rate-row span { font-size: 10px; color: var(--slate-light); white-space: nowrap; }
+
+@media (max-width: 768px) {
+  .header { flex-direction: column; gap: 8px; padding: 8px 12px; }
+  .header-nav { flex-wrap: wrap; justify-content: center; }
+  .app { flex-direction: column; }
+  .sidebar { width: 100%; min-width: 100%; height: auto; position: static; border-right: none; border-bottom: 1px solid var(--border); max-height: none; overflow-y: visible; }
+  .main { padding: 16px; }
+  .metrics { grid-template-columns: 1fr; }
+  .invoice-footer { grid-template-columns: repeat(2, 1fr); }
+}

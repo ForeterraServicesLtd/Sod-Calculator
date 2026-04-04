@@ -58,6 +58,14 @@
   .msg { font-size: 12px; margin-top: 10px; text-align: center; padding: 8px; border-radius: 6px; }
   .msg.error { color: #8a1a1a; background: #fdeaea; }
   .msg.success { color: var(--green); background: var(--green-pale); }
+  @media (max-width: 768px) {
+    .header { flex-direction: column; gap: 8px; padding: 8px 12px; }
+    .header-nav { flex-wrap: wrap; justify-content: center; }
+    .content { padding: 20px 16px; }
+    .filters { justify-content: center; }
+    .job-header { flex-direction: column; gap: 6px; }
+    .job-budget { text-align: left; }
+  }
 </style>
 </head>
 <body>

@@ -142,3 +142,13 @@ input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; border-radius
 .time-bar { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px; font-size: 11px; color: var(--slate-mid); font-family: var(--mono); line-height: 1.7; }
 .q-line.disc .q-line-label { color: var(--red); }
 .q-line.disc .q-line-val   { color: var(--red); }
+
+@media (max-width: 768px) {
+  .header { flex-direction: column; gap: 8px; padding: 8px 12px; }
+  .header-nav { flex-wrap: wrap; justify-content: center; }
+  .app { flex-direction: column; }
+  .sidebar { width: 100%; min-width: 100%; height: auto; position: static; border-right: none; border-bottom: 1px solid var(--border); max-height: none; overflow-y: visible; }
+  .main { padding: 16px; }
+  .metrics { grid-template-columns: 1fr; }
+  .invoice-footer { grid-template-columns: repeat(2, 1fr); }
+}

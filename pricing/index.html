@@ -56,6 +56,11 @@
   .price-features li svg { width: 16px; height: 16px; fill: var(--green); flex-shrink: 0; }
   .subscribe-btn { display: inline-block; width: 100%; padding: 14px; background: var(--green); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 500; font-family: 'DM Sans', sans-serif; cursor: pointer; text-decoration: none; transition: background 0.15s; }
   .subscribe-btn:hover { background: #14572f; }
+  @media (max-width: 768px) {
+    .header { flex-direction: column; gap: 8px; padding: 8px 12px; }
+    .header-nav { flex-wrap: wrap; justify-content: center; }
+    .content { padding: 20px 16px; }
+  }
 </style>
 </head>
 <body>

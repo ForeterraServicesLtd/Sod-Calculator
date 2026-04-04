@@ -69,6 +69,13 @@
   .success-card svg { width: 56px; height: 56px; fill: var(--green); margin-bottom: 16px; }
   .success-card h2 { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
   .success-card p { font-size: 13px; color: var(--slate-light); margin-bottom: 20px; line-height: 1.5; }
+  @media (max-width: 768px) {
+    .header { flex-direction: column; gap: 8px; padding: 8px 12px; }
+    .header-nav { flex-wrap: wrap; justify-content: center; }
+    .content { padding: 20px 16px; }
+    .service-grid { grid-template-columns: 1fr; }
+    .two-col { grid-template-columns: 1fr; }
+  }
 </style>
 </head>
 <body>

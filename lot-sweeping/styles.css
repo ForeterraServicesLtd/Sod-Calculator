@@ -121,3 +121,13 @@ input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; border-radius
 /* Equipment expandable inputs */
 .equip-inputs { display: none; padding: 4px 0 8px 22px; }
 .equip-inputs.open { display: block; }
+
+@media (max-width: 768px) {
+  .header { flex-direction: column; gap: 8px; padding: 8px 12px; }
+  .header-nav { flex-wrap: wrap; justify-content: center; }
+  .app { flex-direction: column; }
+  .sidebar { width: 100%; min-width: 100%; height: auto; position: static; border-right: none; border-bottom: 1px solid var(--border); max-height: none; overflow-y: visible; }
+  .main { padding: 16px; }
+  .metrics { grid-template-columns: 1fr; }
+  .invoice-footer { grid-template-columns: repeat(2, 1fr); }
+}

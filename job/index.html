@@ -81,6 +81,12 @@
   .my-job-title { font-size: 13px; font-weight: 500; }
   .my-job-meta { font-size: 10px; color: var(--slate-light); margin-top: 2px; }
   .my-job-bids { font-family: var(--mono); font-size: 12px; color: var(--green); font-weight: 500; }
+  @media (max-width: 768px) {
+    .header { flex-direction: column; gap: 8px; padding: 8px 12px; }
+    .header-nav { flex-wrap: wrap; justify-content: center; }
+    .content { padding: 20px 16px; }
+    .job-meta { grid-template-columns: 1fr; }
+  }
 </style>
 </head>
 <body>

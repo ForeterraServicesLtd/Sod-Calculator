@@ -50,6 +50,12 @@
   .hidden { display: none; }
   a.link { color: var(--green); text-decoration: none; font-size: 12px; }
   a.link:hover { text-decoration: underline; }
+  @media (max-width: 768px) {
+    .header { flex-direction: column; gap: 8px; padding: 8px 12px; }
+    .header-nav { flex-wrap: wrap; justify-content: center; }
+    .content { padding: 20px 16px; }
+    .checkbox-grid { grid-template-columns: 1fr; }
+  }
 </style>
 </head>
 <body>

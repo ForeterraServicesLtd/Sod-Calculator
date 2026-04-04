@@ -55,6 +55,12 @@
   .stat-card { background: white; border: 1px solid var(--border); border-radius: 8px; padding: 12px; text-align: center; }
   .stat-val { font-family: var(--mono); font-size: 20px; font-weight: 500; color: var(--green); }
   .stat-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--slate-light); margin-top: 2px; }
+  @media (max-width: 768px) {
+    .header { flex-direction: column; gap: 8px; padding: 8px 12px; }
+    .header-nav { flex-wrap: wrap; justify-content: center; }
+    .content { padding: 20px 16px; }
+    .stats { grid-template-columns: 1fr; }
+  }
 </style>
 </head>
 <body>

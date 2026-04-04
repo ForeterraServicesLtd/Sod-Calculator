@@ -75,6 +75,14 @@
   @keyframes spin { to { transform: rotate(360deg); } }
   .empty { text-align: center; padding: 32px; color: var(--slate-light); font-size: 12px; }
   .updated-note { font-size: 10px; color: var(--slate-light); text-align: right; margin-bottom: 8px; }
+  @media (max-width: 768px) {
+    .header { flex-direction: column; gap: 8px; padding: 8px 12px; }
+    .header-nav { flex-wrap: wrap; justify-content: center; }
+    .content { padding: 20px 16px; }
+    .product-table { font-size: 10px; }
+    .product-table th, .product-table td { padding: 6px 8px; }
+    .vendor-card { flex-direction: column; gap: 8px; text-align: center; }
+  }
 </style>
 </head>
 <body>
