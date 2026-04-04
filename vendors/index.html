@@ -112,10 +112,15 @@
   <h1 class="page-title">Vendor Prices</h1>
   <p class="page-sub">Live pricing pulled from vendor websites. Use these to estimate material costs in your quotes.</p>
 
+  <div style="display:flex;gap:8px;margin-bottom:16px;" id="vendor-tabs">
+    <button class="filter-btn active" onclick="switchVendor('kakwastone', this)">Kakwa Stone</button>
+    <button class="filter-btn" onclick="switchVendor('bulkdirect', this)">Bulk Direct</button>
+  </div>
+
   <div class="vendor-card">
     <div>
-      <div class="vendor-name">Kakwa Stone</div>
-      <div class="vendor-meta">kakwastone.com · Grande Prairie, AB · WooCommerce API</div>
+      <div class="vendor-name" id="vendor-name">Kakwa Stone</div>
+      <div class="vendor-meta" id="vendor-meta">kakwastone.com · Grande Prairie, AB · WooCommerce API</div>
     </div>
     <div class="vendor-badge" id="product-count">Loading...</div>
   </div>
@@ -140,12 +145,29 @@
 let allProducts = [];
 let categories = [];
 let activeCategory = 'all';
+let currentVendor = 'kakwastone';
+
+const VENDOR_INFO = {
+  kakwastone: { name: 'Kakwa Stone', meta: 'kakwastone.com · Grande Prairie, AB · WooCommerce API' },
+  bulkdirect: { name: 'Bulk Direct Landscape Supply', meta: 'bulkdirect.ca · Grande Prairie, AB · Shopify API' },
+};
+
+function switchVendor(vendor, btn) {
+  currentVendor = vendor;
+  document.querySelectorAll('#vendor-tabs .filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('vendor-name').textContent = VENDOR_INFO[vendor].name;
+  document.getElementById('vendor-meta').textContent = VENDOR_INFO[vendor].meta;
+  document.getElementById('search').value = '';
+  activeCategory = 'all';
+  loadPrices();
+}
 
 async function loadPrices() {
-  document.getElementById('table-container').innerHTML = '<div class="loading"><div class="spinner"></div>Loading prices from Kakwa Stone...</div>';
+  document.getElementById('table-container').innerHTML = '<div class="loading"><div class="spinner"></div>Loading prices from ' + VENDOR_INFO[currentVendor].name + '...</div>';
 
   try {
-    const res = await fetch('/api/vendor-prices?vendor=kakwastone');
+    const res = await fetch('/api/vendor-prices?vendor=' + currentVendor);
     const data = await res.json();
 
     if (data.error) {
@@ -205,10 +227,16 @@ function renderProducts() {
     const stockDot = p.in_stock ? '<span class="stock-dot in"></span>In stock' : '<span class="stock-dot out"></span>Out';
     const link = p.permalink ? `<a class="product-link" href="${p.permalink}" target="_blank">${p.name}</a>` : p.name;
 
+    // Show variants if available
+    let variantInfo = '';
+    if (p.variants && p.variants.length > 1) {
+      variantInfo = '<br>' + p.variants.map(v => '<span style="font-size:10px;color:var(--slate-mid);">' + v.name + ': $' + parseFloat(v.price).toFixed(2) + '</span>').join(' · ');
+    }
+
     html += `<tr>
       <td>${link}${p.description ? '<br><span style="font-size:10px;color:var(--slate-light);">' + p.description.substring(0, 80) + '</span>' : ''}</td>
       <td><span class="cat-chip">${p.category}</span></td>
-      <td class="${priceClass}">${price}${p.sale_price && p.sale_price !== p.price ? '<br><span style="font-size:10px;color:var(--slate-light);text-decoration:line-through;">$' + parseFloat(p.regular_price).toFixed(2) + '</span>' : ''}</td>
+      <td class="${priceClass}">${price}${p.sale_price && p.sale_price !== p.price ? '<br><span style="font-size:10px;color:var(--slate-light);text-decoration:line-through;">$' + parseFloat(p.regular_price).toFixed(2) + '</span>' : ''}${variantInfo}</td>
       <td style="font-size:11px;">${stockDot}</td>
     </tr>`;
   });
