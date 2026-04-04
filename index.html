@@ -136,10 +136,31 @@
         <div id="ho-msg" style="font-size:11px;margin-top:8px;text-align:center;"></div>
       </div>
     </div>
-    <a class="card" href="contractor/">
-      <div class="card-title">Contractor</div>
-      <div class="card-desc">Browse jobs, submit bids, and access pricing calculators for sod, sweeping, herbicide, and more.</div>
-    </a>
+    <div class="card" style="cursor:pointer;" onclick="toggleContractor()">
+      <div class="card-title" id="co-title">Contractor</div>
+      <div class="card-desc" id="co-desc">Browse jobs, submit bids, and access pricing calculators for sod, sweeping, herbicide, and more.</div>
+      <div id="co-expand" style="display:none;margin-top:12px;border-top:1px solid var(--border);padding-top:12px;">
+        <div style="display:flex;gap:6px;margin-bottom:10px;">
+          <button class="ho-tab active" id="co-tab-login" onclick="event.stopPropagation();showCoTab('login')">Log In</button>
+          <button class="ho-tab" id="co-tab-signup" onclick="event.stopPropagation();showCoTab('signup')">Create Account</button>
+        </div>
+        <div id="co-login">
+          <input class="ho-input" type="email" id="co-l-email" placeholder="Email" onclick="event.stopPropagation()">
+          <input class="ho-input" type="password" id="co-l-pass" placeholder="Password" onclick="event.stopPropagation()" onkeydown="if(event.key==='Enter'){event.stopPropagation();coLogin();}">
+          <button class="ho-btn" onclick="event.stopPropagation();coLogin()">Log In</button>
+        </div>
+        <div id="co-signup" style="display:none;">
+          <input class="ho-input" type="text" id="co-s-name" placeholder="Full name" onclick="event.stopPropagation()">
+          <input class="ho-input" type="text" id="co-s-company" placeholder="Company name" onclick="event.stopPropagation()">
+          <input class="ho-input" type="email" id="co-s-email" placeholder="Email" onclick="event.stopPropagation()">
+          <input class="ho-input" type="tel" id="co-s-phone" placeholder="Phone" onclick="event.stopPropagation()">
+          <input class="ho-input" type="password" id="co-s-pass" placeholder="Password (min 6 chars)" onclick="event.stopPropagation()" onkeydown="if(event.key==='Enter'){event.stopPropagation();coSignup();}">
+          <input class="ho-input" type="text" id="co-s-area" placeholder="Service area (e.g. Grande Prairie)" onclick="event.stopPropagation()">
+          <button class="ho-btn" onclick="event.stopPropagation();coSignup()">Create Account</button>
+        </div>
+        <div id="co-msg" style="font-size:11px;margin-top:8px;text-align:center;"></div>
+      </div>
+    </div>
   </div>
 
   <div style="display:flex;gap:12px;justify-content:center;margin-top:20px;flex-wrap:wrap;">
@@ -307,7 +328,72 @@ async function hoSignup() {
   window.location.href = 'homeowner/';
 }
 
-// If already logged in, update the homeowner card
+// Contractor inline auth
+let coExpanded = false;
+function toggleContractor() {
+  if (localStorage.getItem('ft_contractor')) {
+    window.location.href = 'contractor/';
+    return;
+  }
+  coExpanded = !coExpanded;
+  document.getElementById('co-expand').style.display = coExpanded ? 'block' : 'none';
+}
+
+function showCoTab(tab) {
+  document.getElementById('co-login').style.display = tab === 'login' ? 'block' : 'none';
+  document.getElementById('co-signup').style.display = tab === 'signup' ? 'block' : 'none';
+  document.getElementById('co-tab-login').classList.toggle('active', tab === 'login');
+  document.getElementById('co-tab-signup').classList.toggle('active', tab === 'signup');
+}
+
+function coMsg(text, type) {
+  const el = document.getElementById('co-msg');
+  el.style.color = type === 'error' ? '#8a1a1a' : 'var(--green)';
+  el.textContent = text;
+}
+
+async function coLogin() {
+  const email = document.getElementById('co-l-email').value.trim();
+  const pass = document.getElementById('co-l-pass').value;
+  if (!email || !pass) return coMsg('Enter email and password.', 'error');
+
+  coMsg('Logging in...', 'ok');
+  const { data, error } = await hoSb.auth.signInWithPassword({ email, password: pass });
+  if (error) return coMsg(error.message, 'error');
+
+  const { data: profile } = await hoSb.from('profiles').select('*').eq('id', data.user.id).single();
+  localStorage.setItem('ft_contractor', JSON.stringify({
+    id: data.user.id, name: profile?.full_name || email, company: profile?.company_name || '',
+    area: profile?.service_area || '', services: profile?.services_offered || []
+  }));
+  window.location.href = 'contractor/';
+}
+
+async function coSignup() {
+  const name = document.getElementById('co-s-name').value.trim();
+  const company = document.getElementById('co-s-company').value.trim();
+  const email = document.getElementById('co-s-email').value.trim();
+  const phone = document.getElementById('co-s-phone').value.trim();
+  const pass = document.getElementById('co-s-pass').value;
+  const area = document.getElementById('co-s-area').value.trim();
+  if (!name || !email || !pass) return coMsg('Name, email, and password required.', 'error');
+  if (pass.length < 6) return coMsg('Password must be at least 6 characters.', 'error');
+
+  coMsg('Creating account...', 'ok');
+  const { data, error } = await hoSb.auth.signUp({ email, password: pass });
+  if (error) return coMsg(error.message, 'error');
+
+  await hoSb.from('profiles').insert({
+    id: data.user.id, role: 'contractor', full_name: name, email, phone,
+    company_name: company, service_area: area
+  });
+  localStorage.setItem('ft_contractor', JSON.stringify({
+    id: data.user.id, name, company, area, services: []
+  }));
+  window.location.href = 'contractor/';
+}
+
+// If already logged in, update cards
 if (localStorage.getItem('ft_homeowner')) {
   const ho = JSON.parse(localStorage.getItem('ft_homeowner'));
   const card = document.querySelector('.cards .card:first-child');
@@ -317,6 +403,18 @@ if (localStorage.getItem('ft_homeowner')) {
     <div style="display:flex;gap:8px;">
       <a href="homeowner/" style="flex:1;display:block;padding:8px;background:var(--green);color:white;border-radius:6px;text-decoration:none;font-size:11px;font-weight:500;text-align:center;" onclick="event.stopPropagation();">My Dashboard</a>
       <a href="post-job/" style="flex:1;display:block;padding:8px;background:var(--surface);color:var(--slate);border:1px solid var(--border);border-radius:6px;text-decoration:none;font-size:11px;font-weight:500;text-align:center;" onclick="event.stopPropagation();">Post a Job</a>
+    </div>`;
+}
+
+if (localStorage.getItem('ft_contractor')) {
+  const co = JSON.parse(localStorage.getItem('ft_contractor'));
+  const card = document.querySelector('.cards .card:nth-child(2)');
+  card.innerHTML = `
+    <div class="card-title">Welcome back, ${co.name}</div>
+    <div class="card-desc" style="margin-bottom:12px;">${co.company || 'Contractor'} · ${co.area || 'No area set'}</div>
+    <div style="display:flex;gap:8px;">
+      <a href="contractor/" style="flex:1;display:block;padding:8px;background:var(--green);color:white;border-radius:6px;text-decoration:none;font-size:11px;font-weight:500;text-align:center;" onclick="event.stopPropagation();">My Dashboard</a>
+      <a href="jobs/" style="flex:1;display:block;padding:8px;background:var(--surface);color:var(--slate);border:1px solid var(--border);border-radius:6px;text-decoration:none;font-size:11px;font-weight:500;text-align:center;" onclick="event.stopPropagation();">Job Board</a>
     </div>`;
 }
 </script>
