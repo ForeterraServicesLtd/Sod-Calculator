@@ -114,6 +114,7 @@
 
   <div style="display:flex;gap:8px;margin-bottom:16px;" id="vendor-tabs">
     <button class="filter-btn active" onclick="switchVendor('kakwastone', this)">Kakwa Stone</button>
+    <button class="filter-btn" onclick="switchVendor('raintech', this)">Raintech Irrigation</button>
     <button class="filter-btn" onclick="switchVendor('klonservices', this)">KLon Services</button>
     <button class="filter-btn" onclick="switchVendor('bulkdirect', this)">Bulk Direct</button>
   </div>
@@ -150,6 +151,7 @@ let currentVendor = 'kakwastone';
 
 const VENDOR_INFO = {
   kakwastone: { name: 'Kakwa Stone', meta: 'kakwastone.com · Grande Prairie, AB · WooCommerce API' },
+  raintech: { name: 'Raintech Irrigation', meta: 'raintech.ca · Irrigation Supplies · WooCommerce API' },
   klonservices: { name: 'KLon Services — Tree Farm & Nursery', meta: 'klonservices.ca · Grande Prairie, AB · WooCommerce API' },
   bulkdirect: { name: 'Bulk Direct Landscape Supply', meta: 'bulkdirect.ca · Grande Prairie, AB · Shopify API' },
 };

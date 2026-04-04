@@ -18,6 +18,23 @@ const VENDORS = {
       description: item.short_description?.replace(/<[^>]*>/g, '').trim() || '',
     })
   },
+  raintech: {
+    name: 'Raintech Irrigation',
+    type: 'woocommerce',
+    url: 'https://raintech.ca/wp-json/wc/store/v1/products?per_page=100',
+    transform: (item) => ({
+      id: item.id,
+      name: item.name,
+      price: item.prices?.price ? (parseInt(item.prices.price) / 100).toFixed(2) : null,
+      regular_price: item.prices?.regular_price ? (parseInt(item.prices.regular_price) / 100).toFixed(2) : null,
+      sale_price: item.prices?.sale_price && item.prices.sale_price !== '0' ? (parseInt(item.prices.sale_price) / 100).toFixed(2) : null,
+      currency: item.prices?.currency_code || 'CAD',
+      category: item.categories?.[0]?.name || 'Uncategorized',
+      in_stock: item.is_in_stock,
+      permalink: item.permalink,
+      description: item.short_description?.replace(/<[^>]*>/g, '').trim() || '',
+    })
+  },
   klonservices: {
     name: 'KLon Services — Tree Farm & Nursery',
     type: 'woocommerce',
