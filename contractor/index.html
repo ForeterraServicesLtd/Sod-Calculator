@@ -291,8 +291,8 @@ async function showDashboard(user) {
   document.getElementById('d-company').textContent = user.company || 'Independent';
   document.getElementById('d-area').textContent = user.area || 'No area set';
 
-  // Load bids
-  const { data: bids } = await sb.from('bids').select('*, jobs(title, service_type, location, status)').eq('contractor_id', user.id).order('created_at', { ascending: false });
+  // Load bids with full job details
+  const { data: bids } = await sb.from('bids').select('*, jobs(id, title, service_type, location, status, area_sqft, budget_low, description, contact_name, contact_email, contact_phone, created_at)').eq('contractor_id', user.id).order('created_at', { ascending: false });
 
   const container = document.getElementById('my-bids');
   if (!bids || bids.length === 0) {
@@ -300,20 +300,82 @@ async function showDashboard(user) {
     return;
   }
 
-  container.innerHTML = bids.map(b => `
-    <div style="background:white;border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:8px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;">
-        <div>
-          <div style="font-size:13px;font-weight:500;">${b.jobs?.title || 'Job'}</div>
-          <div style="font-size:10px;color:var(--slate-light);">${b.jobs?.service_type || ''} · ${b.jobs?.location || ''}</div>
+  container.innerHTML = bids.map((b, i) => {
+    const statusColor = b.status === 'accepted' ? 'var(--green)' : b.status === 'rejected' ? '#8a1a1a' : 'var(--slate-light)';
+    const statusBg = b.status === 'accepted' ? 'var(--green-pale,#eaf4ee)' : b.status === 'rejected' ? '#fdeaea' : '#f2f4f8';
+    const statusLabel = b.status.charAt(0).toUpperCase() + b.status.slice(1);
+    const bidDate = new Date(b.created_at).toLocaleDateString('en-CA', { month: 'short', day: 'numeric', year: 'numeric' });
+    const jobDate = b.jobs?.created_at ? new Date(b.jobs.created_at).toLocaleDateString('en-CA', { month: 'short', day: 'numeric' }) : '';
+    const budget = b.jobs?.budget_low ? '$' + b.jobs.budget_low.toLocaleString() : 'TBD';
+
+    return `
+      <div style="background:white;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;overflow:hidden;">
+        <div style="padding:12px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;" onclick="document.getElementById('bid-detail-${i}').style.display=document.getElementById('bid-detail-${i}').style.display==='none'?'block':'none'">
+          <div>
+            <div style="font-size:13px;font-weight:500;">${b.jobs?.title || 'Job'}</div>
+            <div style="font-size:10px;color:var(--slate-light);">${b.jobs?.service_type || ''} · ${b.jobs?.location || ''} · ${bidDate}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="text-align:right;">
+              <div style="font-family:var(--mono);font-size:14px;font-weight:500;color:var(--green);">$${b.amount.toLocaleString()}</div>
+              <div style="font-size:9px;padding:1px 8px;border-radius:10px;background:${statusBg};color:${statusColor};font-weight:500;display:inline-block;">${statusLabel}</div>
+            </div>
+            <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:var(--slate-light);flex-shrink:0;"><path d="M7 10l5 5 5-5z"/></svg>
+          </div>
         </div>
-        <div style="text-align:right;">
-          <div style="font-family:var(--mono);font-size:14px;font-weight:500;color:var(--green);">$${b.amount}</div>
-          <div style="font-size:10px;color:${b.status === 'accepted' ? 'var(--green)' : b.status === 'rejected' ? '#8a1a1a' : 'var(--slate-light)'};">${b.status}</div>
+        <div id="bid-detail-${i}" style="display:none;padding:0 16px 16px;border-top:1px solid var(--border);">
+          <div style="padding-top:12px;">
+
+            <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.06em;color:var(--slate-light);margin-bottom:6px;">Your Bid</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+              <div style="background:var(--surface);padding:8px 10px;border-radius:6px;">
+                <div style="font-size:9px;color:var(--slate-light);text-transform:uppercase;">Amount</div>
+                <div style="font-family:var(--mono);font-size:14px;font-weight:500;color:var(--green);">$${b.amount.toLocaleString()}</div>
+              </div>
+              <div style="background:var(--surface);padding:8px 10px;border-radius:6px;">
+                <div style="font-size:9px;color:var(--slate-light);text-transform:uppercase;">Status</div>
+                <div style="font-size:13px;font-weight:500;color:${statusColor};">${statusLabel}</div>
+              </div>
+            </div>
+            ${b.message ? `<div style="font-size:11px;color:var(--slate-mid);margin-bottom:12px;padding:8px 10px;background:var(--surface);border-radius:6px;line-height:1.5;"><span style="font-size:9px;color:var(--slate-light);text-transform:uppercase;display:block;margin-bottom:3px;">Your Message</span>${b.message}</div>` : ''}
+
+            <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.06em;color:var(--slate-light);margin-bottom:6px;">Job Details</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+              <div style="background:var(--surface);padding:8px 10px;border-radius:6px;">
+                <div style="font-size:9px;color:var(--slate-light);text-transform:uppercase;">Service</div>
+                <div style="font-size:12px;font-weight:500;">${b.jobs?.service_type || '—'}</div>
+              </div>
+              <div style="background:var(--surface);padding:8px 10px;border-radius:6px;">
+                <div style="font-size:9px;color:var(--slate-light);text-transform:uppercase;">Location</div>
+                <div style="font-size:12px;font-weight:500;">${b.jobs?.location || '—'}</div>
+              </div>
+              <div style="background:var(--surface);padding:8px 10px;border-radius:6px;">
+                <div style="font-size:9px;color:var(--slate-light);text-transform:uppercase;">Area</div>
+                <div style="font-size:12px;font-weight:500;">${b.jobs?.area_sqft ? b.jobs.area_sqft.toLocaleString() + ' sq ft' : '—'}</div>
+              </div>
+              <div style="background:var(--surface);padding:8px 10px;border-radius:6px;">
+                <div style="font-size:9px;color:var(--slate-light);text-transform:uppercase;">Budget</div>
+                <div style="font-size:12px;font-weight:500;">${budget}</div>
+              </div>
+            </div>
+            ${b.jobs?.description ? `<div style="font-size:11px;color:var(--slate-mid);margin-bottom:12px;line-height:1.5;">${b.jobs.description}</div>` : ''}
+
+            ${b.status === 'accepted' ? `
+              <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.06em;color:var(--slate-light);margin-bottom:6px;">Homeowner Contact</div>
+              <div style="background:var(--green-pale,#eaf4ee);border:1px solid var(--green);border-radius:6px;padding:10px 12px;">
+                <div style="font-size:12px;font-weight:500;">${b.jobs?.contact_name || '—'}</div>
+                ${b.jobs?.contact_email ? `<div style="font-size:11px;margin-top:2px;"><a href="mailto:${b.jobs.contact_email}" style="color:var(--green);text-decoration:none;">${b.jobs.contact_email}</a></div>` : ''}
+                ${b.jobs?.contact_phone ? `<div style="font-size:11px;margin-top:2px;"><a href="tel:${b.jobs.contact_phone}" style="color:var(--green);text-decoration:none;">${b.jobs.contact_phone}</a></div>` : ''}
+              </div>
+            ` : b.status === 'pending' ? `
+              <div style="font-size:10px;color:var(--slate-light);font-style:italic;">Homeowner contact info will be available once your bid is accepted.</div>
+            ` : `
+              <div style="font-size:10px;color:#8a1a1a;font-style:italic;">This bid was declined by the homeowner.</div>
+            `}
+          </div>
         </div>
-      </div>
-    </div>
-  `).join('');
+      </div>`;
+  }).join('');
 }
 
 // Check if already logged in
