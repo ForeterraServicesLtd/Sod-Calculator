@@ -298,8 +298,9 @@
 </div>
 
 <script>
-// Show newsletter popup once per session
-if (!sessionStorage.getItem('ft_nl_dismissed')) {
+// Show newsletter popup once per session, only until April 30 2026
+const nlExpiry = new Date('2026-05-01T00:00:00');
+if (!sessionStorage.getItem('ft_nl_dismissed') && new Date() < nlExpiry) {
   setTimeout(() => { document.getElementById('nl-popup').style.display = 'flex'; }, 1000);
 }
 function dismissNewsletter() {
